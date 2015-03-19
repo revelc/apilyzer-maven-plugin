@@ -74,6 +74,9 @@ public class Analyze
 
     Field[] fields = clazz.getFields();
     for (Field field : fields) {
+      if (field.isAnnotationPresent(Deprecated.class))
+        continue;
+
       if (!isOk(publicSet, field.getType())) {
         System.out.printf(format, "Field", shorten(clazz.getName()), field.getName(), shorten(field.getType().getName()));
       }
@@ -113,6 +116,8 @@ public class Analyze
 
     Class<?>[] classes = clazz.getClasses();
     for (Class<?> class1 : classes) {
+      if(class1.isAnnotationPresent(Deprecated.class))
+        continue;
       if(!isOk(publicSet, class1)){
         System.out.printf(format, "Public class", shorten(clazz.getName()), "N/A", shorten(class1.getName()));
       }

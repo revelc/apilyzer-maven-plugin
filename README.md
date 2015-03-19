@@ -8,7 +8,7 @@ The program looks for references to non public API types used by the Accumulo
 public API.  Analyzing imports of public API types is insufficient, because its
 ok for a public API class to import a non public API class for use in its
 implementation.  All public methods, fields, and subclasses in the public API
-are analyzed.
+are analyzed.  Deprecated parts of the public API are excluded from analysis.
 
 To execute this program, run the following commands.
 
@@ -63,11 +63,11 @@ Method param         o.a.a.c.c.mock.MockConfiguration                           
 Method return        o.a.a.c.c.mock.MockConfiguration                             getDefaultConfiguration(...)        o.a.a.c.conf.DefaultConfiguration  
 Method param         o.a.a.c.c.mock.MockConfiguration                             getTimeInMillis(...)                o.a.a.c.conf.Property              
 Method param         o.a.a.c.c.mock.MockConfiguration                             getCount(...)                       o.a.a.c.conf.Property              
-Method param         o.a.a.c.c.mock.MockConfiguration                             getAllPropertiesWithPrefix(...)     o.a.a.c.conf.Property              
 Method param         o.a.a.c.c.mock.MockConfiguration                             getMemoryInBytes(...)               o.a.a.c.conf.Property              
 Method param         o.a.a.c.c.mock.MockConfiguration                             getFraction(...)                    o.a.a.c.conf.Property              
 Method return        o.a.a.c.c.mock.MockConfiguration                             getTableConfiguration(...)          o.a.a.c.conf.AccumuloConfiguration 
 Method param         o.a.a.c.c.mock.MockConfiguration                             instantiateClassProperty(...)       o.a.a.c.conf.Property              
+Method param         o.a.a.c.c.mock.MockConfiguration                             getAllPropertiesWithPrefix(...)     o.a.a.c.conf.Property              
 Public class         o.a.a.c.c.mock.MockConfiguration                             N/A                                 o.a.a.c.conf.AccumuloConfiguration$PrefixFilter
 Public class         o.a.a.c.c.mock.MockConfiguration                             N/A                                 o.a.a.c.conf.AccumuloConfiguration$AllFilter
 Public class         o.a.a.c.c.mock.MockConfiguration                             N/A                                 o.a.a.c.conf.AccumuloConfiguration$PropertyFilter
@@ -156,7 +156,6 @@ org.apache.hadoop.io.Text
 org.apache.hadoop.io.Writable
 org.apache.hadoop.io.WritableComparable
 org.apache.hadoop.io.WritableComparator
-org.apache.hadoop.mapred.FileOutputFormat$Counter
 org.apache.hadoop.mapred.InputSplit
 org.apache.hadoop.mapred.JobConf
 org.apache.hadoop.mapred.RecordReader
@@ -170,7 +169,6 @@ org.apache.hadoop.mapreduce.RecordReader
 org.apache.hadoop.mapreduce.RecordWriter
 org.apache.hadoop.mapreduce.TaskAttemptContext
 org.apache.hadoop.mapreduce.TaskInputOutputContext
-org.apache.hadoop.mapreduce.lib.output.FileOutputFormat$Counter
 org.apache.hadoop.util.Progressable
 org.apache.log4j.Level
 org.apache.log4j.Logger
