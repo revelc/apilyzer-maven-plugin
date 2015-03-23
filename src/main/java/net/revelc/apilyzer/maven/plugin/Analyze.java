@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
@@ -72,7 +73,7 @@ public class Analyze extends AbstractMojo {
       property = "apilyzer.outputFile", readonly = true)
   private String outputFile;
 
-  private static final String format = "%-20s %-60s %-35s %s\n";
+  private static final String FORMAT = "%-20s %-60s %-35s %s\n";
 
   private boolean isOk(Set<String> publicSet, Class<?> clazz) {
 
@@ -113,14 +114,23 @@ public class Analyze extends AbstractMojo {
       return;
     }
 
-    Field[] fields = clazz.getFields();
+    // TODO check superclasses/interfaces
+
+    // TODO check generic type parameters
+
+    Field[] fields = clazz.getDeclaredFields();
     for (Field field : fields) {
+
+      if (!isPublicOrProtected(field)) {
+        continue;
+      }
+
       if (field.isAnnotationPresent(Deprecated.class)) {
         continue;
       }
 
       if (!isOk(publicSet, field.getType())) {
-        out.printf(format, "Field", clazz.getName(), field.getName(), field.getType().getName());
+        out.printf(FORMAT, "Field", clazz.getName(), field.getName(), field.getType().getName());
       }
     }
 
@@ -133,52 +143,62 @@ public class Analyze extends AbstractMojo {
       Class<?>[] params = constructor.getParameterTypes();
       for (Class<?> param : params) {
         if (!isOk(publicSet, param)) {
-          out.printf(format, "Constructor param", clazz.getName(), "(...)", param.getName());
+          out.printf(FORMAT, "Constructor param", clazz.getName(), "(...)", param.getName());
         }
       }
     }
 
-    Method[] methods = clazz.getMethods();
-
+    Method[] methods = clazz.getDeclaredMethods();
     for (Method method : methods) {
+
+      if (!isPublicOrProtected(method)) {
+        continue;
+      }
 
       if (method.isAnnotationPresent(Deprecated.class)) {
         continue;
       }
 
       if (!isOk(publicSet, method.getReturnType())) {
-        out.printf(format, "Method return", clazz.getName(), method.getName() + "(...)", method
+        out.printf(FORMAT, "Method return", clazz.getName(), method.getName() + "(...)", method
             .getReturnType().getName());
       }
 
       Class<?>[] params = method.getParameterTypes();
       for (Class<?> param : params) {
         if (!isOk(publicSet, param)) {
-          out.printf(format, "Method param", clazz.getName(), method.getName() + "(...)",
+          out.printf(FORMAT, "Method param", clazz.getName(), method.getName() + "(...)",
               param.getName());
         }
       }
     }
 
-    Class<?>[] classes = clazz.getClasses();
+    Class<?>[] classes = clazz.getDeclaredClasses();
     for (Class<?> class1 : classes) {
+      if (!isPublicOrProtected(class1)) {
+        continue;
+      }
+
+      // TODO recurse; actually, this is a bit redundant
+
       if (class1.isAnnotationPresent(Deprecated.class)) {
         continue;
       }
       if (!isOk(publicSet, class1)) {
-        out.printf(format, "Public class", clazz.getName(), "N/A", class1.getName());
+        out.printf(FORMAT, "Public class", clazz.getName(), "N/A", class1.getName());
       }
     }
   }
 
   @Override
   public void execute() throws MojoFailureException, MojoExecutionException {
-    try (PrintStream out = new PrintStream(new File(outputFile))) {
 
-      if (!skip.equalsIgnoreCase("false") && !skip.equalsIgnoreCase("0")) {
-        // TODO log skipped message
-        return;
-      }
+    if (!skip.equalsIgnoreCase("false")) {
+      getLog().info("APILyzer execution skipped");
+      return;
+    }
+
+    try (PrintStream out = new PrintStream(new File(outputFile))) {
 
       out.println("Includes: " + includes);
       out.println("Excludes: " + excludes);
@@ -237,7 +257,7 @@ public class Analyze extends AbstractMojo {
         // TODO make recursive
         Class<?>[] declaredClasses = clazz.getDeclaredClasses();
         for (Class<?> declaredClazz : declaredClasses) {
-          if ((declaredClazz.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED)) != 0) {
+          if (isPublicOrProtected(declaredClazz)) {
             publicApiClasses.add(declaredClazz);
           }
         }
@@ -260,7 +280,7 @@ public class Analyze extends AbstractMojo {
       }
       out.println();
 
-      out.printf(format, "CONTEXT", "TYPE", "FIELD/METHOD", "NON-PUBLIC REFERENCE");
+      out.printf(FORMAT, "CONTEXT", "TYPE", "FIELD/METHOD", "NON-PUBLIC REFERENCE");
       out.println();
 
       // look for public API methods/fields/subclasses that use classes not in public API
@@ -271,5 +291,13 @@ public class Analyze extends AbstractMojo {
       throw new MojoExecutionException(e.getMessage(), e);
     }
 
+  }
+
+  private boolean isPublicOrProtected(Class<?> clazz) {
+    return (clazz.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED)) != 0;
+  }
+
+  private boolean isPublicOrProtected(Member member) {
+    return (member.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED)) != 0;
   }
 }
