@@ -153,6 +153,11 @@ public class Analyze extends AbstractMojo {
 
     Constructor<?>[] constructors = clazz.getConstructors();
     for (Constructor<?> constructor : constructors) {
+      
+      if (constructor.isSynthetic()) {
+        continue;
+      }
+      
       if (constructor.isAnnotationPresent(Deprecated.class)) {
         continue;
       }
@@ -169,10 +174,14 @@ public class Analyze extends AbstractMojo {
     Method[] methods = clazz.getDeclaredMethods();
     for (Method method : methods) {
 
-      if (!isPublicOrProtected(method)) {
+      if (method.isSynthetic() || method.isBridge()) {
         continue;
       }
 
+      if (!isPublicOrProtected(method)) {
+        continue;
+      }
+      
       if (method.isAnnotationPresent(Deprecated.class)) {
         continue;
       }
