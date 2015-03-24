@@ -43,7 +43,7 @@ To add this plugin to your project, configure the plugin similarly to:
             </goals>
             <configuration>
               <includes>
-		<!--Specify one or more regular expressions that define the
+                <!--Specify one or more regular expressions that define the
                     public API.  Each regex is matched agains all fully 
                     qualified class names.  Any class that matches (and is 
                     public) is added to the set of public API classes.-->
