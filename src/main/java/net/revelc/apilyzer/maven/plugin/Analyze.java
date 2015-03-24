@@ -47,6 +47,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * Analyzes declared public API.
+ */
 @Mojo(name = "analyze", defaultPhase = LifecyclePhase.VERIFY,
     requiresDependencyResolution = ResolutionScope.COMPILE)
 public class Analyze extends AbstractMojo {
