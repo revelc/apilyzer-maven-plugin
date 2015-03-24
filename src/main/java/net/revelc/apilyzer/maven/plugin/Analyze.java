@@ -81,7 +81,7 @@ public class Analyze extends AbstractMojo {
   private static final String FORMAT = "  %-20s %-60s %-35s %s\n";
 
   private Map<String, Boolean> badSupers = new HashMap<>();
-  
+
   private boolean isOk(Set<String> publicSet, Class<?> clazz) {
 
     while (clazz.isArray()) {
@@ -117,7 +117,7 @@ public class Analyze extends AbstractMojo {
   private boolean checkClass(Class<?> clazz, Set<String> publicSet, PrintStream out) {
 
     boolean ok = true;
-    
+
     // TODO make configurable
     if (clazz.isAnnotationPresent(Deprecated.class)) {
       return true;
@@ -127,7 +127,7 @@ public class Analyze extends AbstractMojo {
     if (superClazz != null) {
       ok = checkSuperClass(clazz, publicSet, out, ok, superClazz);
     }
-    
+
     for (Class<?> iface : clazz.getInterfaces()) {
       ok = checkSuperClass(clazz, publicSet, out, ok, iface);
     }
@@ -209,11 +209,11 @@ public class Analyze extends AbstractMojo {
         ok = false;
       }
     }
-    
+
     return ok;
   }
 
-  private boolean checkSuperClass(Class<?> clazz, Set<String> publicSet, PrintStream out, 
+  private boolean checkSuperClass(Class<?> clazz, Set<String> publicSet, PrintStream out,
       boolean ok, Class<?> superClazz) {
     if (badSupers.containsKey(superClazz.getName())) {
       if (badSupers.get(superClazz.getName())) {
