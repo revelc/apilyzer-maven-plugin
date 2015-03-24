@@ -340,11 +340,11 @@
               <goal>site</goal>
             </goals>
             <phase>site</phase>
+            <configuration>
+              <server>github</server>
+              <message>Creating site for ${project.version}</message>
+            </configuration>
           </execution>
-          <configuration>
-            <server>github</server>
-            <message>Creating site for ${project.version}</message>
-          </configuration>
         </executions>
       </plugin>
     </plugins>
