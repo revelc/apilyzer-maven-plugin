@@ -15,7 +15,6 @@
 package net.revelc.apilyzer.maven.plugin;
 
 import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
@@ -36,16 +35,13 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -79,8 +75,6 @@ public class Analyze extends AbstractMojo {
   private String outputFile;
 
   private static final String FORMAT = "  %-20s %-60s %-35s %s\n";
-
-  private Map<String, Boolean> badSupers = new HashMap<>();
 
   private boolean isOk(Set<String> publicSet, Class<?> clazz) {
 
@@ -123,25 +117,17 @@ public class Analyze extends AbstractMojo {
       return true;
     }
 
-    Class<?> superClazz = clazz.getSuperclass();
-    if (superClazz != null) {
-      ok = checkSuperClass(clazz, publicSet, out, ok, superClazz);
-    }
-
-    for (Class<?> iface : clazz.getInterfaces()) {
-      ok = checkSuperClass(clazz, publicSet, out, ok, iface);
-    }
-
     // TODO check generic type parameters
 
-    Field[] fields = clazz.getDeclaredFields();
+    Field[] fields = clazz.getFields();
     for (Field field : fields) {
 
-      if (!isPublicOrProtected(field)) {
+      if (field.isAnnotationPresent(Deprecated.class)) {
         continue;
       }
 
-      if (field.isAnnotationPresent(Deprecated.class)) {
+      if (!field.getDeclaringClass().getName().equals(clazz.getName())
+          && isOk(publicSet, field.getDeclaringClass())) {
         continue;
       }
 
@@ -153,11 +139,11 @@ public class Analyze extends AbstractMojo {
 
     Constructor<?>[] constructors = clazz.getConstructors();
     for (Constructor<?> constructor : constructors) {
-      
+
       if (constructor.isSynthetic()) {
         continue;
       }
-      
+
       if (constructor.isAnnotationPresent(Deprecated.class)) {
         continue;
       }
@@ -171,24 +157,25 @@ public class Analyze extends AbstractMojo {
       }
     }
 
-    Method[] methods = clazz.getDeclaredMethods();
+    Method[] methods = clazz.getMethods();
     for (Method method : methods) {
 
       if (method.isSynthetic() || method.isBridge()) {
         continue;
       }
 
-      if (!isPublicOrProtected(method)) {
-        continue;
-      }
-      
       if (method.isAnnotationPresent(Deprecated.class)) {
         continue;
       }
 
+      if (!method.getDeclaringClass().getName().equals(clazz.getName())
+          && isOk(publicSet, method.getDeclaringClass())) {
+        continue;
+      }
+
       if (!isOk(publicSet, method.getReturnType())) {
-        out.printf(FORMAT, "Method return", clazz.getName(), method.getName() + "(...)", method
-            .getReturnType().getName());
+        out.printf(FORMAT, "Method return", clazz.getName(), method.getName() + "(...)",
+            method.getReturnType().getName());
         ok = false;
       }
 
@@ -202,39 +189,20 @@ public class Analyze extends AbstractMojo {
       }
     }
 
-    Class<?>[] classes = clazz.getDeclaredClasses();
-    for (Class<?> class1 : classes) {
-      if (!isPublicOrProtected(class1)) {
-        continue;
-      }
 
-      // TODO recurse; actually, this is a bit redundant (not for superclasses not in public API)
+    Class<?>[] classes = clazz.getClasses();
+    for (Class<?> class1 : classes) {
 
       if (class1.isAnnotationPresent(Deprecated.class)) {
         continue;
       }
-      if (!isOk(publicSet, class1)) {
-        out.printf(FORMAT, "Public class", clazz.getName(), "N/A", class1.getName());
+
+      if (!isOk(publicSet, class1) && !checkClass(class1, publicSet, out)) {
+        out.printf(FORMAT, "Inner class", clazz.getName(), "N/A", class1.getName());
         ok = false;
       }
     }
 
-    return ok;
-  }
-
-  private boolean checkSuperClass(Class<?> clazz, Set<String> publicSet, PrintStream out,
-      boolean ok, Class<?> superClazz) {
-    if (badSupers.containsKey(superClazz.getName())) {
-      if (badSupers.get(superClazz.getName())) {
-        out.printf(FORMAT, "Bad Superclass", clazz.getName(), "N/A", superClazz.getName());
-      }
-    } else if (!isOk(publicSet, superClazz) && !checkClass(superClazz, publicSet, out)) {
-      out.printf(FORMAT, "Bad Superclass", clazz.getName(), "N/A", superClazz.getName());
-      badSupers.put(superClazz.getName(), true);
-      ok = false;
-    } else {
-      badSupers.put(superClazz.getName(), false);
-    }
     return ok;
   }
 
@@ -280,8 +248,9 @@ public class Analyze extends AbstractMojo {
       }
 
       List<Class<?>> publicApiClasses = new ArrayList<Class<?>>();
+      TreeSet<String> publicSet = new TreeSet<>();
 
-      for (ClassInfo classInfo : cp.getTopLevelClasses()) {
+      for (ClassInfo classInfo : cp.getAllClasses()) {
         // TODO handle empty includes case; maybe?
         for (String includePattern : includes) {
           if (classInfo.getName().matches(includePattern)) {
@@ -296,32 +265,13 @@ public class Analyze extends AbstractMojo {
               Class<?> clazz = classInfo.load();
               if (isPublicOrProtected(clazz)) {
                 publicApiClasses.add(clazz);
+                publicSet.add(clazz.getName());
               }
             }
             break;
           }
         }
       }
-
-      // add subclasses of public API
-      for (Class<?> clazz : new ArrayList<Class<?>>(publicApiClasses)) {
-        // TODO make recursive
-        Class<?>[] declaredClasses = clazz.getDeclaredClasses();
-        for (Class<?> declaredClazz : declaredClasses) {
-          if (isPublicOrProtected(declaredClazz)) {
-            publicApiClasses.add(declaredClazz);
-          }
-        }
-      }
-
-      TreeSet<String> publicSet =
-          new TreeSet<String>(Collections2.transform(publicApiClasses,
-              new Function<Class<?>, String>() {
-                @Override
-                public String apply(Class<?> input) {
-                  return input.getName();
-                }
-              }));
 
       out.println();
 
@@ -348,9 +298,5 @@ public class Analyze extends AbstractMojo {
 
   private boolean isPublicOrProtected(Class<?> clazz) {
     return (clazz.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED)) != 0;
-  }
-
-  private boolean isPublicOrProtected(Member member) {
-    return (member.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED)) != 0;
   }
 }
