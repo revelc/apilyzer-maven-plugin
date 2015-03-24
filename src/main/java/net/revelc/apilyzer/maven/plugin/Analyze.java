@@ -43,7 +43,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -76,8 +78,10 @@ public class Analyze extends AbstractMojo {
       property = "apilyzer.outputFile", readonly = true)
   private String outputFile;
 
-  private static final String FORMAT = "%-20s %-60s %-35s %s\n";
+  private static final String FORMAT = "  %-20s %-60s %-35s %s\n";
 
+  private Map<String, Boolean> badSupers = new HashMap<>();
+  
   private boolean isOk(Set<String> publicSet, Class<?> clazz) {
 
     while (clazz.isArray()) {
@@ -110,14 +114,23 @@ public class Analyze extends AbstractMojo {
     return false;
   }
 
-  private void checkClass(Class<?> clazz, Set<String> publicSet, PrintStream out) {
+  private boolean checkClass(Class<?> clazz, Set<String> publicSet, PrintStream out) {
 
+    boolean ok = true;
+    
     // TODO make configurable
     if (clazz.isAnnotationPresent(Deprecated.class)) {
-      return;
+      return true;
     }
 
-    // TODO check superclasses/interfaces
+    Class<?> superClazz = clazz.getSuperclass();
+    if (superClazz != null) {
+      ok = checkSuperClass(clazz, publicSet, out, ok, superClazz);
+    }
+    
+    for (Class<?> iface : clazz.getInterfaces()) {
+      ok = checkSuperClass(clazz, publicSet, out, ok, iface);
+    }
 
     // TODO check generic type parameters
 
@@ -134,6 +147,7 @@ public class Analyze extends AbstractMojo {
 
       if (!isOk(publicSet, field.getType())) {
         out.printf(FORMAT, "Field", clazz.getName(), field.getName(), field.getType().getName());
+        ok = false;
       }
     }
 
@@ -147,6 +161,7 @@ public class Analyze extends AbstractMojo {
       for (Class<?> param : params) {
         if (!isOk(publicSet, param)) {
           out.printf(FORMAT, "Constructor param", clazz.getName(), "(...)", param.getName());
+          ok = false;
         }
       }
     }
@@ -165,6 +180,7 @@ public class Analyze extends AbstractMojo {
       if (!isOk(publicSet, method.getReturnType())) {
         out.printf(FORMAT, "Method return", clazz.getName(), method.getName() + "(...)", method
             .getReturnType().getName());
+        ok = false;
       }
 
       Class<?>[] params = method.getParameterTypes();
@@ -172,6 +188,7 @@ public class Analyze extends AbstractMojo {
         if (!isOk(publicSet, param)) {
           out.printf(FORMAT, "Method param", clazz.getName(), method.getName() + "(...)",
               param.getName());
+          ok = false;
         }
       }
     }
@@ -182,15 +199,34 @@ public class Analyze extends AbstractMojo {
         continue;
       }
 
-      // TODO recurse; actually, this is a bit redundant
+      // TODO recurse; actually, this is a bit redundant (not for superclasses not in public API)
 
       if (class1.isAnnotationPresent(Deprecated.class)) {
         continue;
       }
       if (!isOk(publicSet, class1)) {
         out.printf(FORMAT, "Public class", clazz.getName(), "N/A", class1.getName());
+        ok = false;
       }
     }
+    
+    return ok;
+  }
+
+  private boolean checkSuperClass(Class<?> clazz, Set<String> publicSet, PrintStream out, 
+      boolean ok, Class<?> superClazz) {
+    if (badSupers.containsKey(superClazz.getName())) {
+      if (badSupers.get(superClazz.getName())) {
+        out.printf(FORMAT, "Bad Superclass", clazz.getName(), "N/A", superClazz.getName());
+      }
+    } else if (!isOk(publicSet, superClazz) && !checkClass(superClazz, publicSet, out)) {
+      out.printf(FORMAT, "Bad Superclass", clazz.getName(), "N/A", superClazz.getName());
+      badSupers.put(superClazz.getName(), true);
+      ok = false;
+    } else {
+      badSupers.put(superClazz.getName(), false);
+    }
+    return ok;
   }
 
   @Override
@@ -248,7 +284,10 @@ public class Analyze extends AbstractMojo {
               }
             }
             if (!exclude) {
-              publicApiClasses.add(classInfo.load());
+              Class<?> clazz = classInfo.load();
+              if (isPublicOrProtected(clazz)) {
+                publicApiClasses.add(clazz);
+              }
             }
             break;
           }
@@ -279,10 +318,12 @@ public class Analyze extends AbstractMojo {
 
       out.println("Public API:");
       for (String item : publicSet) {
-        out.println(item);
+        out.println("  " + item);
       }
       out.println();
 
+      out.println("Problems : ");
+      out.println();
       out.printf(FORMAT, "CONTEXT", "TYPE", "FIELD/METHOD", "NON-PUBLIC REFERENCE");
       out.println();
 

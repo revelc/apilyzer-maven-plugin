@@ -21,14 +21,14 @@ A simple maven plugin that analyzes types used by declared public API methods
 and generates a report.
 
 The program looks for references to non public API types used by the public API.
-Analyzing imports of public API types is insufficient, because its ok for a
+[Analyzing imports][1] of public API types is insufficient, because its ok for a
 public API class to import a non public API class for use in its implementation.
 All public methods, fields, and subclasses in the public API are analyzed.
 Deprecated parts of the public API are excluded from analysis.
 
 To add this plugin to your project, configure the plugin similarly to:
 
-```
+```xml
   <build>
     <plugins>
       <plugin>
@@ -43,13 +43,22 @@ To add this plugin to your project, configure the plugin similarly to:
             </goals>
             <configuration>
               <includes>
+		<!--Specify one or more regular expressions that define the
+                    public API.  Each regex is matched agains all fully 
+                    qualified class names.  Any class that matches (and is 
+                    public) is added to the set of public API classes.-->
                 <include>org[.]apache[.]accumulo[.]minicluster[.].*</include>
               </includes>
               <excludes>
+                <!--Specifiy multiple regular expressions. Any regex that 
+                    matches will exclude a prevously included class from
+                    the set of API classes -->
                 <exclude>.*[.]impl[.].*</exclude>
                 <exclude>.*Impl</exclude>
               </excludes>
               <allows>
+                <!-- Define the set of non-API classes thats it ok for public 
+                     API members to reference.-->
                 <allow>org[.]apache[.]accumulo[.]core[.]client[.].*</allow>
                 <allow>org[.]apache[.]accumulo[.]core[.]data[.](Mutation|Key|Value|Condition|ConditionalMutation|Range|ByteSequence|PartialKey|Column)</allow>
                 <allow>org[.]apache[.]accumulo[.]core[.]security[.](ColumnVisibility|Authorizations)</allow>
@@ -90,4 +99,6 @@ CONTEXT              TYPE                                                       
 Method return        org.apache.accumulo.minicluster.MiniAccumuloInstance         getConfigProperties(...)            org.apache.commons.configuration.PropertiesConfiguration
 Method param         org.apache.accumulo.minicluster.MiniAccumuloInstance         lookupInstanceName(...)             org.apache.accumulo.fate.zookeeper.ZooCache
 ```
+
+[1]: http://checkstyle.sourceforge.net/config_imports.html#ImportControl
 
