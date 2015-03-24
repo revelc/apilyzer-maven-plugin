@@ -15,6 +15,8 @@
 APILyzer: A simple API Analyzer
 ===============================
 
+View this plugin's documentation at: http://revelc.github.io/apilyzer-maven-plugin
+
 A simple maven plugin that analyzes types used by declared public API methods
 and generates a report.
 
