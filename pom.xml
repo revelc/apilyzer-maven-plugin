@@ -336,6 +336,7 @@
             <configuration>
               <server>github</server>
               <message>Creating site for ${project.version}</message>
+              <noJekyll>true</noJekyll>
             </configuration>
           </execution>
         </executions>
