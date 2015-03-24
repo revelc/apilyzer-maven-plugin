@@ -297,6 +297,11 @@
             <goals>
               <goal>check</goal>
             </goals>
+            <configuration>
+              <excludes>
+                <exclude>src/site/resources/CNAME</exclude>
+              </excludes>
+            </configuration>
           </execution>
         </executions>
       </plugin>
