@@ -50,15 +50,20 @@ To add this plugin to your project, configure the plugin similarly to:
                 <include>org[.]apache[.]accumulo[.]minicluster[.].*</include>
               </includes>
               <excludes>
-                <!--Specifiy multiple regular expressions. Any regex that 
-                    matches will exclude a prevously included class from
-                    the set of API classes -->
+                <!--Specifiy zero or more regular expressions. Any regex that 
+                    matches will exclude a prevously included class from the
+                    set of API classes -->
                 <exclude>.*[.]impl[.].*</exclude>
                 <exclude>.*Impl</exclude>
               </excludes>
               <allows>
-                <!-- Define the set of non-API classes thats it ok for public 
-                     API members to reference.-->
+                <!-- Specify zero or more regular expressions defining the set
+                     of non-API classes thats it ok for public API members to 
+                     reference.  These regular expressions are matched against 
+                     fully qualified type names referenced by public API 
+                     members.  Conceptually, public API classes and Java classes 
+                     are automatically added to this set, so there is no need
+                     to add those here. -->
                 <allow>org[.]apache[.]accumulo[.]core[.]client[.].*</allow>
                 <allow>org[.]apache[.]accumulo[.]core[.]data[.](Mutation|Key|Value|Condition|ConditionalMutation|Range|ByteSequence|PartialKey|Column)</allow>
                 <allow>org[.]apache[.]accumulo[.]core[.]security[.](ColumnVisibility|Authorizations)</allow>
