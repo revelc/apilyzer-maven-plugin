@@ -19,7 +19,7 @@
     <artifactId>apache</artifactId>
     <version>16</version>
   </parent>
-  <groupId>net.revelc</groupId>
+  <groupId>net.revelc.apilyzer</groupId>
   <artifactId>apilyzer-maven-plugin</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
@@ -34,9 +34,20 @@
     <license>
       <name>Apache License, Version 2.0</name>
       <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+      <distribution>repo</distribution>
     </license>
   </licenses>
-  <mailingLists />
+  <developers>
+    <developer>
+      <name>Christopher Tubbs</name>
+    </developer>
+    <developer>
+      <name>Keith Turner</name>
+    </developer>
+  </developers>
+  <mailingLists>
+    <mailingList />
+  </mailingLists>
   <prerequisites>
     <maven>${maven.min-version}</maven>
   </prerequisites>
@@ -56,7 +67,7 @@
     <maven.min-version>3.2.3</maven.min-version>
     <!-- skip standard site deployment, because site is deployed using github plugin instead -->
     <maven.site.deploy.skip>true</maven.site.deploy.skip>
-    <mavenPluginToolsVersion>3.2</mavenPluginToolsVersion>
+    <mavenPluginToolsVersion>3.4</mavenPluginToolsVersion>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
