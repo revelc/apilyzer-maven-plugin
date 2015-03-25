@@ -41,6 +41,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -108,6 +109,47 @@ public class Analyze extends AbstractMojo {
     return false;
   }
 
+  //get public and protected fields
+  private List<Field> getFields(Class<?> clazz) {
+    ArrayList<Field> fields = new ArrayList<Field>(Arrays.asList(clazz.getFields()));
+
+    //TODO need to get superlclasses protected fields, deduping on name
+    for (Field f : clazz.getDeclaredFields()) {
+      if ((f.getModifiers() & Modifier.PROTECTED) != 0) {
+        fields.add(f);
+      }
+    }
+
+    return fields;
+  }
+
+  //get public and protected methods
+  private List<Method> getMethods(Class<?> clazz) {
+    ArrayList<Method> methods = new ArrayList<Method>(Arrays.asList(clazz.getMethods()));
+
+    //TODO need to get superlclasses protected methods, deduping on signature
+    for (Method m : clazz.getDeclaredMethods()) {
+      if ((m.getModifiers() & Modifier.PROTECTED) != 0) {
+        methods.add(m);
+      }
+    }
+
+    return methods;
+  }
+
+  private List<Class<?>> getClasses(Class<?> clazz) {
+    ArrayList<Class<?>> classes = new ArrayList<Class<?>>(Arrays.asList(clazz.getClasses()));
+
+    //TODO need to get superlclasses protected classes, deduping on name
+    for (Class<?> c : clazz.getDeclaredClasses()) {
+      if ((c.getModifiers() & Modifier.PROTECTED) != 0) {
+        classes.add(c);
+      }
+    }
+
+    return classes;
+  }
+
   private boolean checkClass(Class<?> clazz, Set<String> publicSet, PrintStream out) {
 
     boolean ok = true;
@@ -119,8 +161,7 @@ public class Analyze extends AbstractMojo {
 
     // TODO check generic type parameters
 
-    Field[] fields = clazz.getFields();
-    for (Field field : fields) {
+    for (Field field : getFields(clazz)) {
 
       if (field.isAnnotationPresent(Deprecated.class)) {
         continue;
@@ -157,8 +198,7 @@ public class Analyze extends AbstractMojo {
       }
     }
 
-    Method[] methods = clazz.getMethods();
-    for (Method method : methods) {
+    for (Method method : getMethods(clazz)) {
 
       if (method.isSynthetic() || method.isBridge()) {
         continue;
@@ -189,9 +229,7 @@ public class Analyze extends AbstractMojo {
       }
     }
 
-
-    Class<?>[] classes = clazz.getClasses();
-    for (Class<?> class1 : classes) {
+    for (Class<?> class1 : getClasses(clazz)) {
 
       if (class1.isAnnotationPresent(Deprecated.class)) {
         continue;
@@ -293,7 +331,6 @@ public class Analyze extends AbstractMojo {
     } catch (FileNotFoundException e) {
       throw new MojoExecutionException(e.getMessage(), e);
     }
-
   }
 
   private boolean isPublicOrProtected(Class<?> clazz) {
