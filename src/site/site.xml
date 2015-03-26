@@ -18,6 +18,22 @@
     <artifactId>maven-fluido-skin</artifactId>
     <version>1.3.1</version>
   </skin>
+  <custom>
+    <fluidoSkin>
+      <facebookLike />
+      <gitHub>
+        <projectId>revelc/apilyzer-maven-plugin</projectId>
+      </gitHub>
+      <googlePlusOne />
+      <googleSearch>
+        <sitesearch />
+      </googleSearch>
+      <profile>pre-release</profile>
+      <ribbonOrientation>right</ribbonOrientation>
+      <skipGenerationDate>true</skipGenerationDate>
+      <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
+    </fluidoSkin>
+  </custom>
   <body>
     <menu name="Overview">
       <item name="Introduction" href="index.html"/>
