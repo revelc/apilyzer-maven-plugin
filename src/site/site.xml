@@ -23,13 +23,13 @@
       <facebookLike />
       <gitHub>
         <projectId>revelc/apilyzer-maven-plugin</projectId>
+        <ribbonOrientation>right</ribbonOrientation>
       </gitHub>
       <googlePlusOne />
       <googleSearch>
         <sitesearch />
       </googleSearch>
       <profile>pre-release</profile>
-      <ribbonOrientation>right</ribbonOrientation>
       <skipGenerationDate>true</skipGenerationDate>
       <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
     </fluidoSkin>
