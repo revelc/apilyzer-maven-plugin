@@ -17,14 +17,21 @@ APILyzer: A simple API Analyzer
 
 View this plugin's documentation at: http://apilyzer.revelc.net
 
-A simple maven plugin that analyzes types used by declared public API methods
-and generates a report.
+[APILyzer][2] is a maven plugin that detects illegal changes to a maven
+projects Java API.  This accomplished by looking for deviations from the
+following rules.
 
-The program looks for references to non public API types used by the public API.
+ * Public API members should use other Public API types.
+ * Public API members should use an approved set of types.
+
+This plugin allows easy declaration of Public API Types and approved types.
+The plugin analyzes the public members of the public API types to ensure only
+expected types are used.  Public members include public methods, public fields,
+and public inner classes.  Protected classes and members are treated as public
+during analysis. Deprecated parts of the public API are excluded from analysis.
+
 [Analyzing imports][1] of public API types is insufficient, because it's ok for a
 public API class to import a non public API class for use in its implementation.
-All public methods, fields, and subclasses in the public API are analyzed.
-Deprecated parts of the public API are excluded from analysis.
 
 To add this plugin to your project, configure the plugin similarly to:
 
@@ -106,4 +113,5 @@ Method param         org.apache.accumulo.minicluster.MiniAccumuloInstance       
 ```
 
 [1]: http://checkstyle.sourceforge.net/config_imports.html#ImportControl
+[2]: http://revelc.github.io/apilyzer-maven-plugin
 
