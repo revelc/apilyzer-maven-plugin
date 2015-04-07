@@ -137,9 +137,9 @@
           <version>2.15</version>
         </plugin>
         <plugin>
-          <groupId>com.google.code.sortpom</groupId>
-          <artifactId>maven-sortpom-plugin</artifactId>
-          <version>2.3.0</version>
+          <groupId>com.github.ekryd.sortpom</groupId>
+          <artifactId>sortpom-maven-plugin</artifactId>
+          <version>2.4.0</version>
           <configuration>
             <predefinedSortOrder>recommended_2008_06</predefinedSortOrder>
             <lineSeparator>\n</lineSeparator>
@@ -183,9 +183,9 @@
               <pluginExecutions>
                 <pluginExecution>
                   <pluginExecutionFilter>
-                    <groupId>com.google.code.sortpom</groupId>
-                    <artifactId>maven-sortpom-plugin</artifactId>
-                    <versionRange>[2.3.0,)</versionRange>
+                    <groupId>com.github.ekryd.sortpom</groupId>
+                    <artifactId>sortpom-maven-plugin</artifactId>
+                    <versionRange>[2.4.0,)</versionRange>
                     <goals>
                       <goal>sort</goal>
                       <goal>verify</goal>
@@ -242,8 +242,8 @@
     </pluginManagement>
     <plugins>
       <plugin>
-        <groupId>com.google.code.sortpom</groupId>
-        <artifactId>maven-sortpom-plugin</artifactId>
+        <groupId>com.github.ekryd.sortpom</groupId>
+        <artifactId>sortpom-maven-plugin</artifactId>
         <executions>
           <execution>
             <id>sort-and-verify-pom</id>
