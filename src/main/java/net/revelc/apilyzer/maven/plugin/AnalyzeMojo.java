@@ -57,28 +57,123 @@ public class AnalyzeMojo extends AbstractMojo {
   @Parameter(defaultValue = "${project}", readonly = true)
   private MavenProject project;
 
+  /**
+   * The classes to include in your public API definition. These classes will be included in the
+   * analysis. The format is java regular expressions. Any classes on the classpath whose
+   * fully-qualified class name matches any of these regular expressions, and does not match any of
+   * those in the excludes, will be included for analysis.
+   *
+   * <p>
+   * Matching is done with the regular expression anchored to the beginning and end of the
+   * fully-qualified class name, so there is no need to prefix with {@code ^} or suffix with
+   * {@code $}. To match a partial class name, you will need to add {@code .*} as a prefix and/or
+   * suffix.
+   *
+   * <p>
+   * Example:
+   *
+   * <pre>
+   * &lt;configuration&gt;
+   * &nbsp;&nbsp;...
+   * &nbsp;&nbsp;&lt;includes&gt;
+   * &nbsp;&nbsp;&nbsp;&nbsp;&lt;include&gt;org[.]apache[.].*&lt;/include&gt;
+   * &nbsp;&nbsp;&nbsp;&nbsp;&lt;include&gt;com[.]example[.]myproject[.].*&lt;/include&gt;
+   * &nbsp;&nbsp;&lt;/includes&gt;
+   * &nbsp;&nbsp;...
+   * &lt;/configuration&gt;
+   * </pre>
+   *
+   * @since 1.0.0
+   */
   @Parameter(alias = "includes", required = true)
   private List<String> includes;
 
+  /**
+   * The classes to exclude from your public API definition, which may have otherwise matched your
+   * includes. The format is the same as {@link #includes}.
+   *
+   * <p>
+   * Example:
+   *
+   * <pre>
+   * &lt;configuration&gt;
+   * &nbsp;&nbsp;...
+   * &nbsp;&nbsp;&lt;excludes&gt;
+   * &nbsp;&nbsp;&nbsp;&nbsp;&lt;exclude&gt;.*[.]impl[.].*&lt;/exclude&gt;
+   * &nbsp;&nbsp;&lt;/excludes&gt;
+   * &nbsp;&nbsp;...
+   * &lt;/configuration&gt;
+   * </pre>
+   *
+   * @since 1.0.0
+   */
   @Parameter(alias = "excludes")
   private List<String> excludes;
 
+  /**
+   * The additional classes, which are allowed to be referenced in your public API, but are not,
+   * themselves, declared as part of your API. For example, these may be objects from a standard
+   * library, which you utilize as parameters in your API methods.
+   *
+   * <p>
+   * These follow the same format as {@link #includes} and {@link #excludes}.
+   *
+   * <p>
+   * Example:
+   *
+   * <pre>
+   * &lt;configuration&gt;
+   * &nbsp;&nbsp;...
+   * &nbsp;&nbsp;&lt;allows&gt;
+   * &nbsp;&nbsp;&nbsp;&nbsp;&lt;allow&gt;com[.]google[.]common[.].*&lt;/allow&gt;
+   * &nbsp;&nbsp;&lt;/allows&gt;
+   * &nbsp;&nbsp;...
+   * &lt;/configuration&gt;
+   * </pre>
+   *
+   * @since 1.0.0
+   */
   @Parameter(alias = "allows")
   private List<String> allows;
 
-  @Parameter(alias = "skip", property = "apilyzer.skip", defaultValue = "false", required = true)
+  /**
+   * Allows skipping execution of this plugin. This may be useful for testing, or if you find that
+   * analysis is taking too long.
+   *
+   * @since 1.0.0
+   */
+  @Parameter(alias = "skip", property = "apilyzer.skip", defaultValue = "false")
   private boolean skip;
 
+  /**
+   * Controls whether API items marked with the {@link Deprecated} annotation are ignored. By
+   * default, these are ignored (excluded from analysis). One useful way to make use of this plugin
+   * is to use it to help identify API methods which should be deprecated (and eventually removed)
+   * because they are using unexpected and problematic classes. Once found, they can be deprecated
+   * and excluded from future analysis.
+   *
+   * @since 1.0.0
+   */
   @Parameter(alias = "ignoreDeprecated", property = "apilyzer.ignoreDeprecated",
-      defaultValue = "true", required = true)
+      defaultValue = "true")
   private boolean ignoreDeprecated;
 
+  /**
+   * The absolute path for the report file.
+   *
+   * @since 1.0.0
+   */
   @Parameter(alias = "outputFile", property = "apilyzer.outputFile",
-      defaultValue = "${project.build.directory}/apilyzer.txt", required = true)
+      defaultValue = "${project.build.directory}/apilyzer.txt")
   private String outputFile;
 
-  @Parameter(alias = "ignoreProblems", property = "apilyzer.ignoreProblems",
-      defaultValue = "false", required = true)
+  /**
+   * Allows ignoring the problems found. If this is set to true, then the report will still be
+   * created, but the plugin will not cause the build to fail.
+   *
+   * @since 1.0.0
+   */
+  @Parameter(alias = "ignoreProblems", property = "apilyzer.ignoreProblems", defaultValue = "false")
   private boolean ignoreProblems;
 
   private static final String FORMAT = "  %-20s %-60s %-35s %s\n";
