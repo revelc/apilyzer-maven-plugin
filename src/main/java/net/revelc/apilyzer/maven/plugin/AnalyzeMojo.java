@@ -52,7 +52,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @Mojo(name = "analyze", defaultPhase = LifecyclePhase.VERIFY,
     requiresDependencyResolution = ResolutionScope.COMPILE, threadSafe = true)
-public class Analyze extends AbstractMojo {
+public class AnalyzeMojo extends AbstractMojo {
 
   @Parameter(defaultValue = "${project}", readonly = true)
   private MavenProject project;
