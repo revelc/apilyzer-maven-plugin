@@ -26,6 +26,9 @@ public API class to import a non public API class for use in its implementation.
 All public methods, fields, and subclasses in the public API are analyzed.
 Deprecated parts of the public API are excluded from analysis.
 
+This plugin uses [Semantic Versioning 2.0.0][2] for its own versioning. Its
+public API is the names of the goals and configuration options.
+
 To add this plugin to your project, configure the plugin similarly to:
 
 ```xml
@@ -106,4 +109,5 @@ Method param         org.apache.accumulo.minicluster.MiniAccumuloInstance       
 ```
 
 [1]: http://checkstyle.sourceforge.net/config_imports.html#ImportControl
+[2]: http://semver.org/spec/v2.0.0.html
 
