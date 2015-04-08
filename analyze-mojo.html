@@ -7,7 +7,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="Date-Revision-yyyymmdd" content="20150326" />
+    <meta name="Date-Revision-yyyymmdd" content="20150407" />
     <meta http-equiv="Content-Language" content="en" />
     <title>APILyzer Maven Plugin &#x2013; apilyzer:analyze</title>
     <link rel="stylesheet" href="./css/apache-maven-fluido-1.3.1.min.css" />
@@ -54,10 +54,10 @@
         <ul class="breadcrumb">
                 
                     
-                  <li id="publishDate">Last Published: 2015-03-26
+                  <li id="publishDate">Last Published: 2015-04-07
                       <span class="divider">|</span>
                    </li>
-                  <li id="projectVersion">Version: 0.0.1-SNAPSHOT
+                  <li id="projectVersion">Version: 1.0.0-SNAPSHOT
                       </li>
                       
                 
@@ -150,7 +150,7 @@
       
 <p><b>Full name</b>:</p>
       
-<p>net.revelc.apilyzer:apilyzer-maven-plugin:0.0.1-SNAPSHOT:analyze</p>
+<p>net.revelc.apilyzer:apilyzer-maven-plugin:1.0.0-SNAPSHOT:analyze</p>
       
 <p><b>Description</b>:</p>
       
@@ -164,13 +164,361 @@
         
 <li>Requires dependency resolution of artifacts in scope: <tt>compile</tt>.</li>
         
+<li>The goal is thread-safe and supports parallel builds.</li>
+        
 <li>Binds by default to the <a class="externalLink" href="http://maven.apache.org/ref/current/maven-core/lifecycles.html">lifecycle phase</a>: <tt>verify</tt>.</li>
       </ul>
       
 <div class="section">
-<h3><a name="Parameters"></a>Parameters</h3>
+<h3><a name="Required_Parameters"></a>Required Parameters</h3>
         
-<p>(no parameters)</p>
+<table class="table table-striped" border="0">
+          
+<tr class="a">
+            
+<th>Name</th>
+            
+<th>Type</th>
+            
+<th>Since</th>
+            
+<th>Description</th>
+          </tr>
+          
+<tr class="b">
+            
+<td><b><a href="#includes">includes</a></b></td>
+            
+<td><tt>List</tt></td>
+            
+<td><tt>1.0.0</tt></td>
+            
+<td>The classes to include in your public API definition. These classes
+will be included in the analysis. The format is java regular
+expressions. Any classes on the classpath whose fully-qualified
+class name matches any of these regular expressions, and does not
+match any of those in the excludes, will be included for analysis. 
+
+<p>Matching is done with the regular expression anchored to the
+beginning and end of the fully-qualified class name, so there is no
+need to prefix with <tt>^</tt> or suffix with <tt>$</tt>.
+To match a partial class name, you will need to add <tt>.*</tt>
+as a prefix and/or suffix.</p>
+
+<p>Example:</p>
+
+<div>
+<pre>
+&lt;configuration&gt;
+  ...
+  &lt;includes&gt;
+    &lt;include&gt;org[.]apache[.].*&lt;/include&gt;
+    &lt;include&gt;com[.]example[.]myproject[.].*&lt;/include&gt;
+  &lt;/includes&gt;
+  ...
+&lt;/configuration&gt;
+</pre></div><br /></td>
+          </tr>
+        </table>
+      </div>
+      
+<div class="section">
+<h3><a name="Optional_Parameters"></a>Optional Parameters</h3>
+        
+<table class="table table-striped" border="0">
+          
+<tr class="a">
+            
+<th>Name</th>
+            
+<th>Type</th>
+            
+<th>Since</th>
+            
+<th>Description</th>
+          </tr>
+          
+<tr class="b">
+            
+<td><b><a href="#allows">allows</a></b></td>
+            
+<td><tt>List</tt></td>
+            
+<td><tt>1.0.0</tt></td>
+            
+<td>The additional classes, which are allowed to be referenced in your
+public API, but are not, themselves, declared as part of your API.
+For example, these may be objects from a standard library, which
+you utilize as parameters in your API methods. 
+
+<p>These follow the same format as <tt>includes</tt> and
+<tt>excludes</tt>.</p>
+
+<p>Example:</p>
+
+<div>
+<pre>
+&lt;configuration&gt;
+  ...
+  &lt;allows&gt;
+    &lt;allow&gt;com[.]google[.]common[.].*&lt;/allow&gt;
+  &lt;/allows&gt;
+  ...
+&lt;/configuration&gt;
+</pre></div><br /></td>
+          </tr>
+          
+<tr class="a">
+            
+<td><b><a href="#excludes">excludes</a></b></td>
+            
+<td><tt>List</tt></td>
+            
+<td><tt>1.0.0</tt></td>
+            
+<td>The classes to exclude from your public API definition, which may
+have otherwise matched your includes. The format is the same as
+<tt>includes</tt>. 
+
+<p>Example:</p>
+
+<div>
+<pre>
+&lt;configuration&gt;
+  ...
+  &lt;excludes&gt;
+    &lt;exclude&gt;.*[.]impl[.].*&lt;/exclude&gt;
+  &lt;/excludes&gt;
+  ...
+&lt;/configuration&gt;
+</pre></div><br /></td>
+          </tr>
+          
+<tr class="b">
+            
+<td><b><a href="#ignoreDeprecated">ignoreDeprecated</a></b></td>
+            
+<td><tt>boolean</tt></td>
+            
+<td><tt>1.0.0</tt></td>
+            
+<td>Controls whether API items marked with the <tt>Deprecated</tt>
+annotation are ignored. By default, these are ignored (excluded
+from analysis). One useful way to make use of this plugin is to use
+it to help identify API methods which should be deprecated (and
+eventually removed) because they are using unexpected and
+problematic classes. Once found, they can be deprecated and
+excluded from future analysis.<br /><b>Default value is</b>: <tt>true</tt>.<br /><b>User property is</b>: <tt>apilyzer.ignoreDeprecated</tt>.</td>
+          </tr>
+          
+<tr class="a">
+            
+<td><b><a href="#ignoreProblems">ignoreProblems</a></b></td>
+            
+<td><tt>boolean</tt></td>
+            
+<td><tt>1.0.0</tt></td>
+            
+<td>Allows ignoring the problems found. If this is set to true, then
+the report will still be created, but the plugin will not cause the
+build to fail.<br /><b>Default value is</b>: <tt>false</tt>.<br /><b>User property is</b>: <tt>apilyzer.ignoreProblems</tt>.</td>
+          </tr>
+          
+<tr class="b">
+            
+<td><b><a href="#outputFile">outputFile</a></b></td>
+            
+<td><tt>String</tt></td>
+            
+<td><tt>1.0.0</tt></td>
+            
+<td>The absolute path for the report file.<br /><b>Default value is</b>: <tt>${project.build.directory}/apilyzer.txt</tt>.<br /><b>User property is</b>: <tt>apilyzer.outputFile</tt>.</td>
+          </tr>
+          
+<tr class="a">
+            
+<td><b><a href="#skip">skip</a></b></td>
+            
+<td><tt>boolean</tt></td>
+            
+<td><tt>1.0.0</tt></td>
+            
+<td>Allows skipping execution of this plugin. This may be useful for
+testing, or if you find that analysis is taking too long.<br /><b>Default value is</b>: <tt>false</tt>.<br /><b>User property is</b>: <tt>apilyzer.skip</tt>.</td>
+          </tr>
+        </table>
+      </div>
+      
+<div class="section">
+<h3><a name="Parameter_Details"></a>Parameter Details</h3>
+        
+<p><b><a name="allows">allows</a>:</b></p>
+        
+<div>The additional classes, which are allowed to be referenced in your
+public API, but are not, themselves, declared as part of your API.
+For example, these may be objects from a standard library, which
+you utilize as parameters in your API methods. 
+
+<p>These follow the same format as <tt>includes</tt> and
+<tt>excludes</tt>.</p>
+
+<p>Example:</p>
+
+<div>
+<pre>
+&lt;configuration&gt;
+  ...
+  &lt;allows&gt;
+    &lt;allow&gt;com[.]google[.]common[.].*&lt;/allow&gt;
+  &lt;/allows&gt;
+  ...
+&lt;/configuration&gt;
+</pre></div></div>
+        
+<ul>
+          
+<li><b>Type</b>: <tt>java.util.List</tt></li>
+          
+<li><b>Since</b>: <tt>1.0.0</tt></li>
+          
+<li><b>Required</b>: <tt>No</tt></li>
+        </ul><hr />
+<p><b><a name="excludes">excludes</a>:</b></p>
+        
+<div>The classes to exclude from your public API definition, which may
+have otherwise matched your includes. The format is the same as
+<tt>includes</tt>. 
+
+<p>Example:</p>
+
+<div>
+<pre>
+&lt;configuration&gt;
+  ...
+  &lt;excludes&gt;
+    &lt;exclude&gt;.*[.]impl[.].*&lt;/exclude&gt;
+  &lt;/excludes&gt;
+  ...
+&lt;/configuration&gt;
+</pre></div></div>
+        
+<ul>
+          
+<li><b>Type</b>: <tt>java.util.List</tt></li>
+          
+<li><b>Since</b>: <tt>1.0.0</tt></li>
+          
+<li><b>Required</b>: <tt>No</tt></li>
+        </ul><hr />
+<p><b><a name="ignoreDeprecated">ignoreDeprecated</a>:</b></p>
+        
+<div>Controls whether API items marked with the <tt>Deprecated</tt>
+annotation are ignored. By default, these are ignored (excluded
+from analysis). One useful way to make use of this plugin is to use
+it to help identify API methods which should be deprecated (and
+eventually removed) because they are using unexpected and
+problematic classes. Once found, they can be deprecated and
+excluded from future analysis.</div>
+        
+<ul>
+          
+<li><b>Type</b>: <tt>boolean</tt></li>
+          
+<li><b>Since</b>: <tt>1.0.0</tt></li>
+          
+<li><b>Required</b>: <tt>No</tt></li>
+          
+<li><b>User Property</b>: <tt>apilyzer.ignoreDeprecated</tt></li>
+          
+<li><b>Default</b>: <tt>true</tt></li>
+        </ul><hr />
+<p><b><a name="ignoreProblems">ignoreProblems</a>:</b></p>
+        
+<div>Allows ignoring the problems found. If this is set to true, then
+the report will still be created, but the plugin will not cause the
+build to fail.</div>
+        
+<ul>
+          
+<li><b>Type</b>: <tt>boolean</tt></li>
+          
+<li><b>Since</b>: <tt>1.0.0</tt></li>
+          
+<li><b>Required</b>: <tt>No</tt></li>
+          
+<li><b>User Property</b>: <tt>apilyzer.ignoreProblems</tt></li>
+          
+<li><b>Default</b>: <tt>false</tt></li>
+        </ul><hr />
+<p><b><a name="includes">includes</a>:</b></p>
+        
+<div>The classes to include in your public API definition. These classes
+will be included in the analysis. The format is java regular
+expressions. Any classes on the classpath whose fully-qualified
+class name matches any of these regular expressions, and does not
+match any of those in the excludes, will be included for analysis. 
+
+<p>Matching is done with the regular expression anchored to the
+beginning and end of the fully-qualified class name, so there is no
+need to prefix with <tt>^</tt> or suffix with <tt>$</tt>.
+To match a partial class name, you will need to add <tt>.*</tt>
+as a prefix and/or suffix.</p>
+
+<p>Example:</p>
+
+<div>
+<pre>
+&lt;configuration&gt;
+  ...
+  &lt;includes&gt;
+    &lt;include&gt;org[.]apache[.].*&lt;/include&gt;
+    &lt;include&gt;com[.]example[.]myproject[.].*&lt;/include&gt;
+  &lt;/includes&gt;
+  ...
+&lt;/configuration&gt;
+</pre></div></div>
+        
+<ul>
+          
+<li><b>Type</b>: <tt>java.util.List</tt></li>
+          
+<li><b>Since</b>: <tt>1.0.0</tt></li>
+          
+<li><b>Required</b>: <tt>Yes</tt></li>
+        </ul><hr />
+<p><b><a name="outputFile">outputFile</a>:</b></p>
+        
+<div>The absolute path for the report file.</div>
+        
+<ul>
+          
+<li><b>Type</b>: <tt>java.lang.String</tt></li>
+          
+<li><b>Since</b>: <tt>1.0.0</tt></li>
+          
+<li><b>Required</b>: <tt>No</tt></li>
+          
+<li><b>User Property</b>: <tt>apilyzer.outputFile</tt></li>
+          
+<li><b>Default</b>: <tt>${project.build.directory}/apilyzer.txt</tt></li>
+        </ul><hr />
+<p><b><a name="skip">skip</a>:</b></p>
+        
+<div>Allows skipping execution of this plugin. This may be useful for
+testing, or if you find that analysis is taking too long.</div>
+        
+<ul>
+          
+<li><b>Type</b>: <tt>boolean</tt></li>
+          
+<li><b>Since</b>: <tt>1.0.0</tt></li>
+          
+<li><b>Required</b>: <tt>No</tt></li>
+          
+<li><b>User Property</b>: <tt>apilyzer.skip</tt></li>
+          
+<li><b>Default</b>: <tt>false</tt></li>
+        </ul>
       </div>
     </div>
   
