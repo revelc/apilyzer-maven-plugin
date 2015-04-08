@@ -45,37 +45,158 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Analyzes declared public API.
  */
 @Mojo(name = "analyze", defaultPhase = LifecyclePhase.VERIFY,
-    requiresDependencyResolution = ResolutionScope.COMPILE)
+    requiresDependencyResolution = ResolutionScope.COMPILE, threadSafe = true)
 public class Analyze extends AbstractMojo {
 
   @Parameter(defaultValue = "${project}", readonly = true)
   private MavenProject project;
 
-  @Parameter(required = true, readonly = true)
+  @Parameter(alias = "includes", required = true)
   private List<String> includes;
 
-  @Parameter(readonly = true)
+  @Parameter(alias = "excludes")
   private List<String> excludes;
 
-  @Parameter(readonly = true)
+  @Parameter(alias = "allows")
   private List<String> allows;
 
-  @Parameter(defaultValue = "false", property = "apilyzer.skip", readonly = true)
-  private String skip;
+  @Parameter(alias = "skip", property = "apilyzer.skip", defaultValue = "false", required = true)
+  private boolean skip;
 
-  @Parameter(defaultValue = "true", property = "apilyzer.ignoreDeprecated", readonly = true)
-  private String ignoreDeprecated;
+  @Parameter(alias = "ignoreDeprecated", property = "apilyzer.ignoreDeprecated",
+      defaultValue = "true", required = true)
+  private boolean ignoreDeprecated;
 
-  @Parameter(defaultValue = "${project.build.directory}/apilyzer.txt",
-      property = "apilyzer.outputFile", readonly = true)
+  @Parameter(alias = "outputFile", property = "apilyzer.outputFile",
+      defaultValue = "${project.build.directory}/apilyzer.txt", required = true)
   private String outputFile;
 
+  @Parameter(alias = "ignoreProblems", property = "apilyzer.ignoreProblems",
+      defaultValue = "false", required = true)
+  private boolean ignoreProblems;
+
   private static final String FORMAT = "  %-20s %-60s %-35s %s\n";
+
+  @Override
+  public void execute() throws MojoFailureException, MojoExecutionException {
+
+    AtomicLong counter = new AtomicLong(0);
+
+    if (skip) {
+      getLog().info("APILyzer execution skipped");
+      return;
+    }
+
+    ClassPath classPath;
+    try {
+      classPath = getClassPath();
+    } catch (IOException | DependencyResolutionRequiredException | IllegalArgumentException e) {
+      throw new MojoExecutionException("Error resolving project classpath", e);
+    }
+
+    try (PrintStream out = new PrintStream(new File(outputFile))) {
+
+      out.println("Includes: " + includes);
+      out.println("Excludes: " + excludes);
+      out.println("Allowed: " + allows);
+
+      List<Class<?>> publicApiClasses = new ArrayList<Class<?>>();
+      TreeSet<String> publicSet = new TreeSet<>();
+      buildPublicSet(classPath, publicApiClasses, publicSet);
+
+      out.println();
+      out.println("Public API:");
+      for (String item : publicSet) {
+        out.println("  " + item);
+      }
+
+      out.println();
+      out.println("Problems : ");
+
+      out.println();
+      out.printf(FORMAT, "CONTEXT", "TYPE", "FIELD/METHOD", "NON-PUBLIC REFERENCE");
+
+      out.println();
+      // look for public API methods/fields/subclasses that use classes not in public API
+      for (Class<?> clazz : publicApiClasses) {
+        checkClass(clazz, publicSet, out, counter);
+      }
+
+      out.println();
+      out.println("Total : " + counter.get());
+
+      String msg =
+          "APILyzer found " + counter.get() + " problem" + (counter.get() == 1 ? "" : "s") + ".";
+      if (counter.get() < 0) {
+        throw new AssertionError("Inconceivable!");
+      } else if (counter.get() == 0) {
+        getLog().info(msg);
+      } else if (counter.get() > 0 && ignoreProblems) {
+        getLog().warn(msg);
+      } else {
+        getLog().error(msg);
+        throw new MojoFailureException(msg);
+      }
+
+    } catch (FileNotFoundException e) {
+      throw new MojoExecutionException("Bad configuration: cannot create specified outputFile", e);
+    }
+
+  }
+
+  private static enum ProblemType {
+    INNER_CLASS, METHOD_PARAM, METHOD_RETURN, FIELD, CTOR_PARAM
+  }
+
+  private ClassPath getClassPath() throws DependencyResolutionRequiredException, IOException {
+    ClassLoader cl;
+    List<URL> urls =
+        Lists.transform(project.getCompileClasspathElements(), new Function<String, URL>() {
+          @Override
+          public URL apply(String input) {
+            try {
+              return new File(input).toURI().toURL();
+            } catch (MalformedURLException e) {
+              throw new IllegalArgumentException("Unable to convert string (" + input + ") to URL",
+                  e);
+            }
+          }
+        });
+    cl = new URLClassLoader(urls.toArray(new URL[0]));
+    return ClassPath.from(cl);
+  }
+
+  private void buildPublicSet(ClassPath classPath, List<Class<?>> publicApiClasses,
+      TreeSet<String> publicSet) {
+    for (ClassInfo classInfo : classPath.getAllClasses()) {
+      // TODO handle empty includes case; maybe?
+      for (String includePattern : includes) {
+        if (classInfo.getName().matches(includePattern)) {
+          boolean exclude = false;
+          for (String excludePattern : excludes) {
+            if (classInfo.getName().matches(excludePattern)) {
+              exclude = true;
+              break;
+            }
+          }
+          if (!exclude) {
+            Class<?> clazz = classInfo.load();
+            if (isPublicOrProtected(clazz)) {
+              publicApiClasses.add(clazz);
+              publicSet.add(clazz.getName());
+            }
+          }
+          break;
+        }
+      }
+    }
+  }
 
   private boolean isOk(Set<String> publicSet, Class<?> clazz) {
 
@@ -109,11 +230,11 @@ public class Analyze extends AbstractMojo {
     return false;
   }
 
-  //get public and protected fields
+  // get public and protected fields
   private List<Field> getFields(Class<?> clazz) {
     ArrayList<Field> fields = new ArrayList<Field>(Arrays.asList(clazz.getFields()));
 
-    //TODO need to get superlclasses protected fields, deduping on name
+    // TODO need to get superlclasses protected fields, deduping on name
     for (Field f : clazz.getDeclaredFields()) {
       if ((f.getModifiers() & Modifier.PROTECTED) != 0) {
         fields.add(f);
@@ -123,11 +244,11 @@ public class Analyze extends AbstractMojo {
     return fields;
   }
 
-  //get public and protected methods
+  // get public and protected methods
   private List<Method> getMethods(Class<?> clazz) {
     ArrayList<Method> methods = new ArrayList<Method>(Arrays.asList(clazz.getMethods()));
 
-    //TODO need to get superlclasses protected methods, deduping on signature
+    // TODO need to get superlclasses protected methods, deduping on signature
     for (Method m : clazz.getDeclaredMethods()) {
       if ((m.getModifiers() & Modifier.PROTECTED) != 0) {
         methods.add(m);
@@ -137,10 +258,10 @@ public class Analyze extends AbstractMojo {
     return methods;
   }
 
-  private List<Class<?>> getClasses(Class<?> clazz) {
+  private List<Class<?>> getInnerClasses(Class<?> clazz) {
     ArrayList<Class<?>> classes = new ArrayList<Class<?>>(Arrays.asList(clazz.getClasses()));
 
-    //TODO need to get superlclasses protected classes, deduping on name
+    // TODO need to get superclasses' protected classes, deduping on name
     for (Class<?> c : clazz.getDeclaredClasses()) {
       if ((c.getModifiers() & Modifier.PROTECTED) != 0) {
         classes.add(c);
@@ -150,12 +271,13 @@ public class Analyze extends AbstractMojo {
     return classes;
   }
 
-  private boolean checkClass(Class<?> clazz, Set<String> publicSet, PrintStream out) {
+  private boolean checkClass(Class<?> clazz, Set<String> publicSet, PrintStream out,
+      AtomicLong counter) {
 
     boolean ok = true;
 
     // TODO make configurable
-    if (clazz.isAnnotationPresent(Deprecated.class)) {
+    if (ignoreDeprecated && clazz.isAnnotationPresent(Deprecated.class)) {
       return true;
     }
 
@@ -163,7 +285,7 @@ public class Analyze extends AbstractMojo {
 
     for (Field field : getFields(clazz)) {
 
-      if (field.isAnnotationPresent(Deprecated.class)) {
+      if (ignoreDeprecated && field.isAnnotationPresent(Deprecated.class)) {
         continue;
       }
 
@@ -173,7 +295,7 @@ public class Analyze extends AbstractMojo {
       }
 
       if (!isOk(publicSet, field.getType())) {
-        out.printf(FORMAT, "Field", clazz.getName(), field.getName(), field.getType().getName());
+        problem(out, counter, ProblemType.FIELD, clazz, field.getName(), field.getType().getName());
         ok = false;
       }
     }
@@ -185,14 +307,14 @@ public class Analyze extends AbstractMojo {
         continue;
       }
 
-      if (constructor.isAnnotationPresent(Deprecated.class)) {
+      if (ignoreDeprecated && constructor.isAnnotationPresent(Deprecated.class)) {
         continue;
       }
 
       Class<?>[] params = constructor.getParameterTypes();
       for (Class<?> param : params) {
         if (!isOk(publicSet, param)) {
-          out.printf(FORMAT, "Constructor param", clazz.getName(), "(...)", param.getName());
+          problem(out, counter, ProblemType.CTOR_PARAM, clazz, "(...)", param.getName());
           ok = false;
         }
       }
@@ -204,7 +326,7 @@ public class Analyze extends AbstractMojo {
         continue;
       }
 
-      if (method.isAnnotationPresent(Deprecated.class)) {
+      if (ignoreDeprecated && method.isAnnotationPresent(Deprecated.class)) {
         continue;
       }
 
@@ -214,29 +336,29 @@ public class Analyze extends AbstractMojo {
       }
 
       if (!isOk(publicSet, method.getReturnType())) {
-        out.printf(FORMAT, "Method return", clazz.getName(), method.getName() + "(...)",
-            method.getReturnType().getName());
+        problem(out, counter, ProblemType.METHOD_RETURN, clazz, method.getName() + "(...)", method
+            .getReturnType().getName());
         ok = false;
       }
 
       Class<?>[] params = method.getParameterTypes();
       for (Class<?> param : params) {
         if (!isOk(publicSet, param)) {
-          out.printf(FORMAT, "Method param", clazz.getName(), method.getName() + "(...)",
+          problem(out, counter, ProblemType.METHOD_PARAM, clazz, method.getName() + "(...)",
               param.getName());
           ok = false;
         }
       }
     }
 
-    for (Class<?> class1 : getClasses(clazz)) {
+    for (Class<?> class1 : getInnerClasses(clazz)) {
 
-      if (class1.isAnnotationPresent(Deprecated.class)) {
+      if (ignoreDeprecated && class1.isAnnotationPresent(Deprecated.class)) {
         continue;
       }
 
-      if (!isOk(publicSet, class1) && !checkClass(class1, publicSet, out)) {
-        out.printf(FORMAT, "Inner class", clazz.getName(), "N/A", class1.getName());
+      if (!isOk(publicSet, class1) && !checkClass(class1, publicSet, out, counter)) {
+        problem(out, counter, ProblemType.INNER_CLASS, clazz, "N/A", class1.getName());
         ok = false;
       }
     }
@@ -244,96 +366,13 @@ public class Analyze extends AbstractMojo {
     return ok;
   }
 
-  @Override
-  public void execute() throws MojoFailureException, MojoExecutionException {
-
-    if (!skip.equalsIgnoreCase("false")) {
-      getLog().info("APILyzer execution skipped");
-      return;
-    }
-
-    try (PrintStream out = new PrintStream(new File(outputFile))) {
-
-      out.println("Includes: " + includes);
-      out.println("Excludes: " + excludes);
-      out.println("Allowed: " + allows);
-
-      ClassPath cp;
-      ClassLoader cl;
-      try {
-        List<URL> urls =
-            Lists.transform(project.getCompileClasspathElements(), new Function<String, URL>() {
-              @Override
-              public URL apply(String input) {
-                try {
-                  return new File(input).toURI().toURL();
-                } catch (MalformedURLException e) {
-                  throw new IllegalArgumentException("Unable to convert string (" + input
-                      + ") to URL", e);
-                }
-              }
-            });
-        cl = new URLClassLoader(urls.toArray(new URL[0]));
-      } catch (DependencyResolutionRequiredException e) {
-        throw new MojoFailureException("Unable to resolve project's compile-time classpath", e);
-      } catch (IllegalArgumentException e) {
-        throw new MojoFailureException(e.getMessage(), e);
-      }
-      try {
-        cp = ClassPath.from(cl);
-      } catch (IOException e) {
-        throw new MojoFailureException("Unable to get classpath from classLoader", e);
-      }
-
-      List<Class<?>> publicApiClasses = new ArrayList<Class<?>>();
-      TreeSet<String> publicSet = new TreeSet<>();
-
-      for (ClassInfo classInfo : cp.getAllClasses()) {
-        // TODO handle empty includes case; maybe?
-        for (String includePattern : includes) {
-          if (classInfo.getName().matches(includePattern)) {
-            boolean exclude = false;
-            for (String excludePattern : excludes) {
-              if (classInfo.getName().matches(excludePattern)) {
-                exclude = true;
-                break;
-              }
-            }
-            if (!exclude) {
-              Class<?> clazz = classInfo.load();
-              if (isPublicOrProtected(clazz)) {
-                publicApiClasses.add(clazz);
-                publicSet.add(clazz.getName());
-              }
-            }
-            break;
-          }
-        }
-      }
-
-      out.println();
-
-      out.println("Public API:");
-      for (String item : publicSet) {
-        out.println("  " + item);
-      }
-      out.println();
-
-      out.println("Problems : ");
-      out.println();
-      out.printf(FORMAT, "CONTEXT", "TYPE", "FIELD/METHOD", "NON-PUBLIC REFERENCE");
-      out.println();
-
-      // look for public API methods/fields/subclasses that use classes not in public API
-      for (Class<?> clazz : publicApiClasses) {
-        checkClass(clazz, publicSet, out);
-      }
-    } catch (FileNotFoundException e) {
-      throw new MojoExecutionException(e.getMessage(), e);
-    }
-  }
-
   private boolean isPublicOrProtected(Class<?> clazz) {
     return (clazz.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED)) != 0;
+  }
+
+  private void problem(PrintStream out, AtomicLong counter, ProblemType type, Class<?> clazz,
+      String member, String problemRef) {
+    counter.incrementAndGet();
+    out.printf(FORMAT, type, clazz.getName(), member, problemRef);
   }
 }
