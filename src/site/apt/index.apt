@@ -12,19 +12,34 @@
 
 Description
 
-  A simple maven plugin that analyzes types used by declared public API methods
-  and generates a report.
+  A simple maven plugin that detects some illegal changes to a Java project's
+  API.
 
 How it works
 
-  The program looks for references to non public API types used by the public
-  API.
-  {{{http://checkstyle.sourceforge.net/config_imports.html#ImportControl}Analyzing
-  imports}} of public API types is insufficient, because it's ok for a public
-  API class to import a non public API class for use in its implementation. All
-  public methods, fields, and subclasses in the public API are analyzed.
-  Deprecated parts of the public API are excluded from analysis.
+  APILyzer looks for deviations from the following rules.
 
+    * Public API members should use other Public API types.
+
+    * Public API members should use an approved set of types.
+
+  APILyzer allows easy declaration of Public API Types and approved types.
+  The public members of the public API types are analyzed to ensure only
+  expected types are used.  Public members include public methods, public fields,
+  and public inner classes.  Protected classes and members are treated as public
+  during analysis.   
+
+Other tools
+
+  This tool fills a niche not covered by other tools like
+  {{{http://mojo.codehaus.org/animal-sniffer-maven-plugin/}Animal Sniffer}} and
+  {{{http://checkstyle.sourceforge.net/config_imports.html#ImportControl}checkstyle
+  import control}}.  A project that wants to ensure API stability would likely
+  use these tools in addition to APILyzer.  Import analysis differs because it's
+  ok for a public API class to import a non public API class for use only in its
+  implementation.  Comparing new API changes to singnatures of a previous API
+  differs because it only validates that the old API is not broken.
+ 
 How to use it
 
   To add this plugin to your project, configure the plugin similarly to:
