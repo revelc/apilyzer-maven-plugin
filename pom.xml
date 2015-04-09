@@ -60,6 +60,19 @@
     <system>GitHub</system>
     <url>https://github.com/revelc/apilyzer-maven-plugin/issues</url>
   </issueManagement>
+  <distributionManagement>
+    <!-- https://issues.sonatype.org/browse/OSSRH-14649 -->
+    <repository>
+      <id>oss.releases.https</id>
+      <name>Sonatype Release Distribution Staging Repository</name>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+    </repository>
+    <snapshotRepository>
+      <id>oss.snapshots.https</id>
+      <name>Sonatype Snapshot Distribution Repository</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
   <properties>
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
