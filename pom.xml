@@ -64,9 +64,10 @@
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
     <!-- the maven-release-plugin makes this recommendation, due to plugin bugs -->
-    <maven.min-version>3.2.2</maven.min-version>
+    <maven.min-version>3.0.4</maven.min-version>
     <!-- skip standard site deployment, because site is deployed using github plugin instead -->
     <maven.site.deploy.skip>true</maven.site.deploy.skip>
+    <maven.tools-version>3.2.2</maven.tools-version>
     <mavenPluginToolsVersion>3.4</mavenPluginToolsVersion>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -86,12 +87,12 @@
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-core</artifactId>
-        <version>${maven.min-version}</version>
+        <version>${maven.tools-version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-plugin-api</artifactId>
-        <version>${maven.min-version}</version>
+        <version>${maven.tools-version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.plugin-tools</groupId>
