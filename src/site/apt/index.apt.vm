@@ -48,9 +48,9 @@ How to use it
   <build>
     <plugins>
       <plugin>
-        <groupId>net.revelc</groupId>
-        <artifactId>apilyzer-maven-plugin</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
         <executions>
           <execution>
             <id>apilyzer</id>
@@ -88,7 +88,7 @@ How to use it
           </execution>
         </executions>
       </plugin>
-    <plugins>
+    </plugins>
   </build>
 +---
 
