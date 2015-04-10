@@ -29,7 +29,6 @@
       <googleSearch>
         <sitesearch />
       </googleSearch>
-      <profile>pre-release</profile>
       <skipGenerationDate>true</skipGenerationDate>
       <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
     </fluidoSkin>
