@@ -228,6 +228,7 @@ public class AnalyzeMojo extends AbstractMojo {
 
       String msg =
           "APILyzer found " + counter.get() + " problem" + (counter.get() == 1 ? "" : "s") + ".";
+      msg += " See " + outputFile + " for details.";
       if (counter.get() < 0) {
         throw new AssertionError("Inconceivable!");
       } else if (counter.get() == 0) {
