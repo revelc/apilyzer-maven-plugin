@@ -19,13 +19,13 @@
     <artifactId>apache</artifactId>
     <version>16</version>
   </parent>
-  <groupId>net.revelc.apilyzer</groupId>
+  <groupId>net.revelc.code</groupId>
   <artifactId>apilyzer-maven-plugin</artifactId>
   <version>1.0.1-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
   <name>APILyzer Maven Plugin</name>
   <description>A Maven plugin for analyzing types used by a declared public API</description>
-  <url>http://apilyzer.revelc.net</url>
+  <url>http://code.revelc.net/apilyzer-maven-plugin</url>
   <organization>
     <name>Revelc</name>
     <url>https://github.com/revelc</url>
