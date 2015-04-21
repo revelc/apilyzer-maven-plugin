@@ -1,50 +1,54 @@
-~~  Licensed under the Apache License, Version 2.0 (the "License");
-~~  you may not use this file except in compliance with the License.
-~~  You may obtain a copy of the License at
-~~
-~~      http://www.apache.org/licenses/LICENSE-2.0
-~~
-~~  Unless required by applicable law or agreed to in writing, software
-~~  distributed under the License is distributed on an "AS IS" BASIS,
-~~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-~~  See the License for the specific language governing permissions and
-~~  limitations under the License.
+<!--
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
 
 Description
+-----------
 
   A simple maven plugin that detects some illegal changes to a Java project's
   API.
 
 How it works
+------------
 
   APILyzer looks for deviations from the following rules.
 
-    * Public API members should use other Public API types.
+  * Public API members should use other Public API types.
+  * Public API members should use an approved set of types.
 
-    * Public API members should use an approved set of types.
-
-  APILyzer allows easy declaration of Public API Types and approved types.
-  The public members of the public API types are analyzed to ensure only
-  expected types are used.  Public members include public methods, public fields,
-  and public inner classes.  Protected classes and members are treated as public
-  during analysis.   
+  APILyzer allows easy declaration of Public API Types and approved types.  The
+  public members of the public API types are analyzed to ensure only expected
+  types are used.  Public members include public methods, public fields, and
+  public inner classes.  Protected classes and members are treated as public
+  during analysis.
 
 Other tools
+-----------
 
-  This tool fills a niche not covered by other tools like
-  {{{http://mojo.codehaus.org/animal-sniffer-maven-plugin/}Animal Sniffer}} and
-  {{{http://checkstyle.sourceforge.net/config_imports.html#ImportControl}checkstyle
-  import control}}.  A project that wants to ensure API stability would likely
-  use these tools in addition to APILyzer.  Import analysis differs because it's
-  ok for a public API class to import a non public API class for use only in its
-  implementation.  Comparing new API changes to singnatures of a previous API
-  differs because it only validates that the old API is not broken.
- 
+  This tool fills a niche not covered by other tools, like [Animal Sniffer][1]
+  and [checkstyle import control][2]. A project that wants to ensure API
+  stability would likely use these tools in addition to APILyzer. Import
+  analysis differs because it's ok for a public API class to import a non-public
+  API class for use only in its implementation. Comparing new API changes to
+  signatures of a previous API differs because it only validates that the old
+  API is not broken.
+
 How to use it
+-------------
 
   To add this plugin to your project, configure the plugin similarly to:
 
-+---
+```xml
   <build>
     <plugins>
       <plugin>
@@ -90,17 +94,17 @@ How to use it
       </plugin>
     </plugins>
   </build>
-+---
+```
 
   and build your project, similarly to (it runs at the verify phase by default):
 
-+---
+```
 mvn verify
-+---
+```
 
   Below is the output of running the above command.
 
-+---
+```
 Includes: [org[.]apache[.]accumulo[.]minicluster[.].*]
 Excludes: [.*[.]impl[.].*, .*Impl]
 Allowed: [org[.]apache[.]accumulo[.]core[.]client[.].*, org[.]apache[.]accumulo[.]core[.]data[.](Mutation|Key|Value|Condition|ConditionalMutation|Range|ByteSequence|PartialKey|Column), org[.]apache[.]accumulo[.]core[.]security[.](ColumnVisibility|Authorizations)]
@@ -119,5 +123,7 @@ CONTEXT              TYPE                                                       
 
 Method return        org.apache.accumulo.minicluster.MiniAccumuloInstance         getConfigProperties(...)            org.apache.commons.configuration.PropertiesConfiguration
 Method param         org.apache.accumulo.minicluster.MiniAccumuloInstance         lookupInstanceName(...)             org.apache.accumulo.fate.zookeeper.ZooCache
-+---
+```
 
+[1]: http://mojo.codehaus.org/animal-sniffer-maven-plugin/
+[2]: http://checkstyle.sourceforge.net/config_imports.html#ImportControl
