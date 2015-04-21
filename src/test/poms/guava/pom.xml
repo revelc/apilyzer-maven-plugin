@@ -22,7 +22,6 @@
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
   <name>Guava APILyzer test</name>
-  <url>http://apilyzer.revelc.net/</url>
   <dependencies>
     <dependency>
 	<groupId>com.google.guava</groupId>

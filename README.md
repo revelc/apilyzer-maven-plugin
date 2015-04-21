@@ -15,7 +15,8 @@
 APILyzer: A simple API Analyzer
 ===============================
 
-View this plugin's documentation at: http://apilyzer.revelc.net
+View this plugin's documentation at:
+http://code.revelc.net/apilyzer-maven-plugin
 
 A simple maven plugin that detects some illegal changes to a Java project's
 API.

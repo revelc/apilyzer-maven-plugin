@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package net.revelc.apilyzer.maven.plugin;
+package net.revelc.code.apilyzer.maven.plugin;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
