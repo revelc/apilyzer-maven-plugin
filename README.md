@@ -12,6 +12,8 @@
   limitations under the License.
 -->
 
+[![Build Status][travis_img]][travis_link] [![Maven Central][maven_img]][maven_link]
+
 APILyzer: A simple API Analyzer
 ===============================
 
@@ -21,8 +23,12 @@ http://code.revelc.net/apilyzer-maven-plugin
 A simple maven plugin that detects some illegal changes to a Java project's
 API.
 
-This plugin uses [Semantic Versioning 2.0.0][2] for its own versioning. Its
+This plugin uses [Semantic Versioning 2.0.0][1] for its own versioning. Its
 public API is the names of the goals and configuration options.
 
-[2]: http://semver.org/spec/v2.0.0.html
+[1]: http://semver.org/spec/v2.0.0.html
+[travis_img]: https://travis-ci.org/revelc/apilyzer-maven-plugin.svg?branch=master
+[travis_link]: https://travis-ci.org/revelc/apilyzer-maven-plugin
+[maven_img]: https://maven-badges.herokuapp.com/maven-central/net.revelc.code/apilyzer-maven-plugin/badge.svg
+[maven_link]: https://maven-badges.herokuapp.com/maven-central/net.revelc.code/apilyzer-maven-plugin
 
