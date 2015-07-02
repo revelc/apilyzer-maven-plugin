@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -176,6 +177,9 @@ public class AnalyzeMojo extends AbstractMojo {
   @Parameter(alias = "ignoreProblems", property = "apilyzer.ignoreProblems", defaultValue = "false")
   private boolean ignoreProblems;
 
+  @Parameter(alias = "includeAnnotations")
+  private List<String> includeAnnotations;
+
   private static final String FORMAT = "  %-20s %-60s %-35s %s\n";
 
   @Override
@@ -198,6 +202,7 @@ public class AnalyzeMojo extends AbstractMojo {
     try (PrintStream out = new PrintStream(new File(outputFile))) {
 
       out.println("Includes: " + includes);
+      out.println("IncludeAnnotations: " + includeAnnotations);
       out.println("Excludes: " + excludes);
       out.println("Allowed: " + allows);
 
@@ -289,6 +294,37 @@ public class AnalyzeMojo extends AbstractMojo {
             }
           }
           break;
+        }
+      }
+
+      //TODO dedupe code
+      for (String includeAnnotation : includeAnnotations) {
+        Annotation[] annotations = classInfo.getClass().getAnnotations();
+        if (classInfo.getName().contains("hadoop")) {
+          System.out.println("looking at class " + classInfo.getName() + " " + annotations.length);
+        }
+        
+        for (Annotation annotation : annotations) {
+          System.out.println("looking at class " + classInfo.getName() + " " + annotation);
+          if (annotation.toString().equals(includeAnnotation)) {
+            boolean exclude = false;
+            for (String excludePattern : excludes) {
+              if (classInfo.getName().matches(excludePattern)) {
+                exclude = true;
+                break;
+              }
+            }
+
+            //TODO could have exclude for annotation
+            if (!exclude) {
+              Class<?> clazz = classInfo.load();
+              if (isPublicOrProtected(clazz)) {
+                publicApiClasses.add(clazz);
+                publicSet.add(clazz.getName());
+              }
+            }
+            break;
+          }
         }
       }
     }
