@@ -28,12 +28,7 @@
   <dependencies>
     <dependency>
 	<groupId>org.apache.hbase</groupId>
-	<artifactId>hbase-shaded-client</artifactId>
-	<version>${hbase.version}</version>
-    </dependency>
-    <dependency>
-	<groupId>org.apache.hbase</groupId>
-	<artifactId>hbase-shaded-server</artifactId>
+	<artifactId>hbase-client</artifactId>
 	<version>${hbase.version}</version>
     </dependency>
   </dependencies>
@@ -51,17 +46,35 @@
               <goal>analyze</goal>
             </goals>
             <configuration>
+              <!--Look for Public+Stable APIs using Types that are not Public+Stable-->
               <includes>
               </includes>
               <includeAnnotations>
-                <include>@org.apache.hadoop.hbase.classification.InterfaceAudience.Public</include>
+                <include>[@]org[.]apache[.]hadoop[.]hbase[.]classification[.]InterfaceAudience[$]Public.*</include>
               </includeAnnotations>
+              <excludeAnnotations>
+                <exclude>[@]org[.]apache[.]hadoop[.]hbase[.]classification[.]InterfaceStability[$]Evolving.*</exclude>
+                <exclude>[@]org[.]apache[.]hadoop[.]hbase[.]classification[.]InterfaceStability[$]Unstable.*</exclude>
+                <!-- If a class is included in the API, then its public inner classes are also (unless excluded).
+                     This exclude is for the case where a type w/ Private annotation is an inner class of a class
+                     with a Public annotation -->
+                <exclude>[@]org[.]apache[.]hadoop[.]hbase[.]classification[.]InterfaceAudience[$](Limited)?Private.*</exclude>
+              </excludeAnnotations>
               <excludes>
+                <exclude>(?!org[.]apache[.]hadoop[.]hbase[.].*).*</exclude>
               </excludes>
               <allows>
+                <!--OK Public+Stable Hadoop APIs used by HBase API
+                    Note : Hadoop APIs that are Evolving were intentionally not included-->
+                <allow>org[.]apache[.]hadoop[.]conf[.]Configuration</allow>
+                <allow>org[.]apache[.]hadoop[.]fs[.]Path</allow>
+                <allow>org[.]apache[.]hadoop[.]io[.]WritableComparator</allow>
+                <allow>org[.]apache[.]hadoop[.]io[.]WritableComparable</allow>
+                <allow>org[.]apache[.]hadoop[.]io[.]RawComparator</allow>
               </allows>
             </configuration>
           </execution>
+          <!-- TODO execute plugin again looking for Public+(Stable|Evolving) APIs using types that are not Public+(Stable|Evolving) -->
         </executions>
       </plugin>
     </plugins>

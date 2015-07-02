@@ -1,15 +1,13 @@
 /*
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package net.revelc.code.apilyzer.maven.plugin;
@@ -33,6 +31,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -42,6 +41,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -68,6 +68,13 @@ public class AnalyzeMojo extends AbstractMojo {
    * fully-qualified class name, so there is no need to prefix with {@code ^} or suffix with
    * {@code $}. To match a partial class name, you will need to add {@code .*} as a prefix and/or
    * suffix.
+   *
+   * <p>
+   * If an include pattern matches a class, then that class along with all of its public or
+   * protected inner classes are added to the public API definition. If you do not wish for a
+   * particular inner class to be in the public API then you can add a more specific exclusion for
+   * it. For example could include {@code com.foo.C} and exclude {@code com.foo.C$I1} if the inner
+   * class {@code C$I1} ends up in the API when its not wanted.
    *
    * <p>
    * Example:
@@ -176,6 +183,66 @@ public class AnalyzeMojo extends AbstractMojo {
   @Parameter(alias = "ignoreProblems", property = "apilyzer.ignoreProblems", defaultValue = "false")
   private boolean ignoreProblems;
 
+  /**
+   * This option enables including classes in your public API definition based on class level
+   * annotations. This option takes one or more regular expression. Annotations are discovered using
+   * reflection, so annotations scoped to compile may not be seen. For each regular expression
+   * {@link String#matches(String)} is called on the output of {@link Annotation#toString()}. If any
+   * annotation matches any regular expression and it does not match any exclusion, then its
+   * included as an API type.
+   * 
+   * <p>
+   * This section of the configuration is ORed with the {@code <includes>} section. So if a class
+   * matches something in either section (and its not excluded), then its included in the API
+   * definition.
+   * 
+   * <p>
+   * This section has the same behavior with inner classes as {@code <includes>}.
+   * 
+   * <p>
+   * Example
+   *
+   * <pre>
+   * &lt;configuration&gt;
+   *   ....
+   *   &lt;includeAnnotations&gt;
+   *     &lt;include&gt;
+   *       [@]com[.]proj42[.]Public.*
+   *     &lt;/include&gt;
+   *   &lt;/includeAnnotations&gt;
+   *   .....
+   * &lt;/configuration&gt;
+   * </pre>
+   * 
+   * @since 1.1.0
+   */
+  @Parameter(alias = "includeAnnotations")
+  private List<String> includeAnnotations = Collections.emptyList();
+
+  /**
+   * Exclude classes from public API definition using annotation.
+   *
+   * <p>
+   * Example
+   *
+   * <pre>
+   * &lt;configuration&gt;
+   *   ....
+   *   &lt;excludeAnnotations&gt;
+   *     &lt;exclude&gt;
+   *       [@]com[.]proj42[.]Alpha.*
+   *     &lt;/exclude&gt;
+   *   &lt;/excludeAnnotations&gt;
+   *   .....
+   * &lt;/configuration&gt;
+   * </pre>
+   * 
+   * @see AnalyzeMojo#includeAnnotations
+   * @since 1.1.0
+   */
+  @Parameter(alias = "excludeAnnotations")
+  private List<String> excludeAnnotations = Collections.emptyList();
+
   private static final String FORMAT = "  %-20s %-60s %-35s %s\n";
 
   @Override
@@ -198,6 +265,8 @@ public class AnalyzeMojo extends AbstractMojo {
     try (PrintStream out = new PrintStream(new File(outputFile))) {
 
       out.println("Includes: " + includes);
+      out.println("IncludeAnnotations: " + includeAnnotations);
+      out.println("ExcludesAnnotations: " + excludeAnnotations);
       out.println("Excludes: " + excludes);
       out.println("Allowed: " + allows);
 
@@ -264,32 +333,145 @@ public class AnalyzeMojo extends AbstractMojo {
             }
           }
         });
-    cl = new URLClassLoader(urls.toArray(new URL[0]));
+    cl = new URLClassLoader(urls.toArray(new URL[0]), null);
     return ClassPath.from(cl);
   }
 
+  private Annotation[] getAnnotations(ClassInfo classInfo) {
+    if (classInfo.getName().startsWith("com.sun") || classInfo.getName().startsWith("java.")) {
+      // was getting class not found exceptions when trying to get annotations for com.sun class...
+      return new Annotation[0];
+    }
+
+    return getAnnotations(classInfo.load());
+  }
+
+  private Annotation[] getAnnotations(Class<?> clazz) {
+    return clazz.getDeclaredAnnotations();
+  }
+
+  /**
+   * Builds the set of Types that are in the public API.
+   */
   private void buildPublicSet(ClassPath classPath, List<Class<?>> publicApiClasses,
       TreeSet<String> publicSet) {
-    for (ClassInfo classInfo : classPath.getAllClasses()) {
+    classLoop: for (ClassInfo classInfo : classPath.getAllClasses()) {
       // TODO handle empty includes case; maybe?
-      for (String includePattern : includes) {
-        if (classInfo.getName().matches(includePattern)) {
-          boolean exclude = false;
-          for (String excludePattern : excludes) {
-            if (classInfo.getName().matches(excludePattern)) {
-              exclude = true;
-              break;
+
+      // Do this check before possibly attempting any annotation checks as these require class
+      // loading. If the class is excluded by a pattern, then no need to load class.
+      if (patternExcludes(classInfo)) {
+        continue;
+      }
+
+      Annotation[] annotations;
+      if (includeAnnotations.size() > 0 || excludeAnnotations.size() > 0) {
+        annotations = getAnnotations(classInfo);
+      } else {
+        annotations = new Annotation[0];
+      }
+
+
+      for (String pattern : includeAnnotations) {
+        for (Annotation annotation : annotations) {
+          if (annotation.toString().matches(pattern)) {
+            if (!annotationExcludes(annotations)) {
+              addPublicApiType(publicApiClasses, publicSet, classInfo);
             }
+            continue classLoop;
           }
-          if (!exclude) {
-            Class<?> clazz = classInfo.load();
-            if (isPublicOrProtected(clazz)) {
-              publicApiClasses.add(clazz);
-              publicSet.add(clazz.getName());
-            }
+        }
+      }
+
+
+      for (String pattern : includes) {
+        if (classInfo.getName().matches(pattern)) {
+          if (!annotationExcludes(annotations)) {
+            addPublicApiType(publicApiClasses, publicSet, classInfo);
           }
           break;
         }
+
+      }
+    }
+  }
+
+  private void addPublicApiType(List<Class<?>> publicApiClasses, TreeSet<String> publicSet,
+      ClassInfo classInfo) {
+    Class<?> clazz = classInfo.load();
+    if (isPublicOrProtected(clazz)) {
+      publicApiClasses.add(clazz);
+      publicSet.add(clazz.getName());
+
+      // for top level classes, add their inner classes
+      if (clazz.getEnclosingClass() == null) {
+        addPublicInnerClasses(publicApiClasses, publicSet, clazz);
+      }
+    }
+  }
+
+  private boolean patternExcludes(ClassInfo classInfo) {
+    for (String excludePattern : excludes) {
+      if (classInfo.getName().matches(excludePattern)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private boolean patternExcludes(Class<?> clazz) {
+    for (String excludePattern : excludes) {
+      if (clazz.getName().matches(excludePattern)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private boolean annotationExcludes(Annotation[] annotations) {
+    for (String pattern : excludeAnnotations) {
+      for (Annotation annotation : annotations) {
+        if (annotation.toString().matches(pattern)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  private boolean annotationExcludes(Class<?> clazz) {
+    if (excludeAnnotations.size() == 0) {
+      return false;
+    }
+
+    Annotation[] annotations = getAnnotations(clazz);
+
+    for (String pattern : excludeAnnotations) {
+      for (Annotation annotation : annotations) {
+        if (annotation.toString().matches(pattern)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  private void addPublicInnerClasses(List<Class<?>> publicApiClasses, TreeSet<String> publicSet,
+      Class<?> clazz) {
+    Class<?>[] innerClasses = clazz.getDeclaredClasses();
+    for (Class<?> ic : innerClasses) {
+      // If a class is in the Public API then all of its public inner class are also considered
+      // to be in the public API unless explicitly excluded.
+      if (isPublicOrProtected(ic) && !publicApiClasses.contains(ic) && !annotationExcludes(ic)
+          && !patternExcludes(ic)) {
+        publicApiClasses.add(ic);
+        publicSet.add(ic.getName());
+
+        addPublicInnerClasses(publicApiClasses, publicSet, ic);
       }
     }
   }
@@ -432,8 +614,8 @@ public class AnalyzeMojo extends AbstractMojo {
       }
 
       if (!isOk(publicSet, method.getReturnType())) {
-        problem(out, counter, ProblemType.METHOD_RETURN, clazz, method.getName() + "(...)", method
-            .getReturnType().getName());
+        problem(out, counter, ProblemType.METHOD_RETURN, clazz, method.getName() + "(...)",
+            method.getReturnType().getName());
         ok = false;
       }
 
@@ -450,6 +632,16 @@ public class AnalyzeMojo extends AbstractMojo {
     for (Class<?> class1 : getInnerClasses(clazz)) {
 
       if (ignoreDeprecated && class1.isAnnotationPresent(Deprecated.class)) {
+        continue;
+      }
+
+      if (class1.equals(clazz)) {
+        // what? see org.apache.hadoop.fs.Options$CreateOpts source in hadoop 2.7.1
+        continue;
+      }
+
+      if (patternExcludes(class1) || annotationExcludes(class1)) {
+        // this inner class is explicitly excluded from API so do not check it
         continue;
       }
 
