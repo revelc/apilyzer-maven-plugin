@@ -124,6 +124,16 @@ CONTEXT              TYPE                                                       
 Method return        org.apache.accumulo.minicluster.MiniAccumuloInstance         getConfigProperties(...)            org.apache.commons.configuration.PropertiesConfiguration
 Method param         org.apache.accumulo.minicluster.MiniAccumuloInstance         lookupInstanceName(...)             org.apache.accumulo.fate.zookeeper.ZooCache
 ```
+The output shows the 8 types that APILyzer determined to be public API types
+based on its configuration and the maven dependencies.  These are the 8 types
+that APILyzer analyzed.
+
+The output also shows two problems APILyzer found with these 8 types.  Both
+problems are with public API methods.  The first problem is
+`MiniAccumuloInstance.getConfigProperties()` returns `PropertiesConfiguration`
+which is not a public API type.  The second problem is
+`MiniAccumuloInstance.lookupInstanceName()` takes a parameter of type
+`ZooCache` which is not a public API type.
 
 [1]: http://mojo.codehaus.org/animal-sniffer-maven-plugin/
 [2]: http://checkstyle.sourceforge.net/config_imports.html#ImportControl
