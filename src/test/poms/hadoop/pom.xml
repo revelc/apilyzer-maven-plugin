@@ -21,17 +21,23 @@
   <artifactId>hadoop-test</artifactId>
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
-  <name>Accumulo APILyzer test</name>
+  <name>Hadoop APILyzer test</name>
+
+  <properties>
+    <hadoop.version>2.7.0</hadoop.version>
+  </properties>
+
   <dependencies>
+    <!--TODO may need different or more dependencies to analyze full Hadoop API-->
     <dependency>
 	<groupId>org.apache.hadoop</groupId>
 	<artifactId>hadoop-common</artifactId>
-	<version>2.7.0</version>
+	<version>${hadoop.version}</version>
     </dependency>
     <dependency>
 	<groupId>org.apache.hadoop</groupId>
 	<artifactId>hadoop-annotations</artifactId>
-	<version>2.7.0</version>
+	<version>${hadoop.version}</version>
     </dependency>
   </dependencies>
 
@@ -43,19 +49,73 @@
         <version>1.1.0-SNAPSHOT</version>
         <executions>
           <execution>
-            <id>apilyzer</id>
+            <id>apilyzer-stable</id>
             <goals>
               <goal>analyze</goal>
             </goals>
             <configuration>
+              <!--Look for Public+Stable APIs using Types that are not Public+Stable-->
+              <outputFile>${project.build.directory}/apilyzer-stable.txt</outputFile>
+              <ignoreProblems>true</ignoreProblems>
               <includes>
+                <!-- This class seems like it should be in public API, but has not 
+                     annotations.  Including here for testing purposes  -->
+                <include>org[.]apache[.]hadoop[.]fs[.]RemoteIterator</include>
               </includes>
               <includeAnnotations>
-                <include>@org.apache.hadoop.classification.InterfaceAudience.Public</include>
+                <include>[@]org[.]apache[.]hadoop[.]classification[.]InterfaceAudience[$]Public.*</include>
               </includeAnnotations>
+              <excludeAnnotations>
+                <exclude>[@]org[.]apache[.]hadoop[.]classification[.]InterfaceStability[$]Evolving.*</exclude>
+                <exclude>[@]org[.]apache[.]hadoop[.]classification[.]InterfaceStability[$]Unstable.*</exclude>
+                <!-- If a class is included in the API, then its public inner classes are also (unless excluded).
+                     This exclude is for the case where a type w/ Private annotation is an inner class of a class
+                     with a Public annotation -->
+                <exclude>[@]org[.]apache[.]hadoop[.]classification[.]InterfaceAudience[$](Limited)?Private.*</exclude>
+              </excludeAnnotations>
               <excludes>
+                <!-- Exclude all classes not in the org.apache.hadoop package -->
+                <exclude>(?!org[.]apache[.]hadoop.*).*</exclude>
+                <!-- This class depended on some Ant class that was not present
+                     so could not get annotations.  Excluding for now. -->
+                <exclude>org[.]apache[.]hadoop[.]record[.]compiler[.]ant[.]RccTask</exclude>
               </excludes>
               <allows>
+                <!-- not sure if hadoop wants to allow these in API, adding for testing -->
+                <allow>org[.]apache[.]log4j[.].*</allow>
+                <allow>org[.]apache[.]commons[.]logging[.].*</allow>
+              </allows>
+            </configuration>
+          </execution>
+          <execution>
+            <id>apilyzer-stable-evolving</id>
+            <goals>
+              <goal>analyze</goal>
+            </goals>
+            <configuration>
+              <!--Look for Public+(Stable|Evolving) APIs using Types that are not Public+(Stable|Evolving)-->
+              <outputFile>${project.build.directory}/apilyzer-stable-evolving.txt</outputFile>
+              <ignoreProblems>true</ignoreProblems>
+              <includes>
+                <include>org[.]apache[.]hadoop[.]fs[.]RemoteIterator</include>
+              </includes>
+              <includeAnnotations>
+                <include>[@]org[.]apache[.]hadoop[.]classification[.]InterfaceAudience[$]Public.*</include>
+              </includeAnnotations>
+              <excludeAnnotations>
+                <exclude>[@]org[.]apache[.]hadoop[.]classification[.]InterfaceStability[$]Unstable.*</exclude>
+                <!-- If a class is included in the API, then its public inner classes are also (unless excluded).
+                     This exclude is for the case where a type w/ Private annotation is an inner class of a class
+                     with a Public annotation -->
+                <exclude>[@]org[.]apache[.]hadoop[.]classification[.]InterfaceAudience[$](Limited)?Private.*</exclude>
+              </excludeAnnotations>
+              <excludes>
+                <exclude>(?!org[.]apache[.]hadoop.*).*</exclude>
+                <exclude>org[.]apache[.]hadoop[.]record[.]compiler[.]ant[.]RccTask</exclude>
+              </excludes>
+              <allows>
+                <allow>org[.]apache[.]log4j[.].*</allow>
+                <allow>org[.]apache[.]commons[.]logging[.].*</allow>
               </allows>
             </configuration>
           </execution>
