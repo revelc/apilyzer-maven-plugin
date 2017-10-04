@@ -207,39 +207,18 @@ public class AnalyzeMojo extends AbstractMojo {
    * This section has the same behavior with inner classes as {@code <includes>}.
    *
    * <p>
-   * The following example shows using annotations to analyze Hadoop's API. When trying to analyze a
-   * classes annotations, the class must be loaded. In the example below some classes could not be
-   * loaded because their dependencies were not on the classpath. However these classes were not in
-   * a package we cared about. Excluding classes not in the {@code org.apache.hadoop} package fixed
-   * this problem.
+   * Example
    *
    * <pre>
-   * {@code
-   * <configuration>
-   *  <!--Look for Public+Stable APIs using Types that are not Public+Stable-->
-   *  <includes>
-   *    <!-- This class has no annotation, but seems like it sould be in API -->
-   *    <include>org[.]apache[.]hadoop[.]fs[.]RemoteIterator</include>
-   *  </includes>
-   *  <includeAnnotations>
-   *    <include>
-   *      [@]org[.]apache[.]hadoop[.]classification[.]InterfaceAudience[$]Public.*
-   *    </include>
-   *  </includeAnnotations>
-   *  <excludeAnnotations>
-   *    <exclude>
-   *      [@]org[.]apache[.]hadoop[.]classification[.]InterfaceStability[$]Evolving.*
-   *    </exclude>
-   *    <exclude>
-   *      [@]org[.]apache[.]hadoop[.]classification[.]InterfaceStability[$]Unstable.*
-   *    </exclude>
-   *  </excludeAnnotations>
-   *  <excludes>
-   *     <!-- Exclude all classes not in the org.apache.hadoop package -->
-   *     <exclude>(?!org[.]apache[.]hadoop.*).*</exclude>
-   *  </excludes>
-   * </configuration>
-   * }
+   * &lt;configuration&gt;
+   *   ....
+   *   &lt;includeAnnotations&gt;
+   *     &lt;include&gt;
+   *       [@]com[.]proj42[.]Public.*
+   *     &lt;/include&gt;
+   *   &lt;/includeAnnotations&gt;
+   *   .....
+   * &lt;/configuration&gt;
    * </pre>
    *
    * @since 1.1.0
@@ -251,6 +230,21 @@ public class AnalyzeMojo extends AbstractMojo {
   /**
    * Exclude classes from public API definition using annotation.
    *
+   * <p>
+   * Example
+   *
+   * <pre>
+   * &lt;configuration&gt;
+   *   ....
+   *   &lt;excludeAnnotations&gt;
+   *     &lt;exclude&gt;
+   *       [@]com[.]proj42[.]Alpha.*
+   *     &lt;/exclude&gt;
+   *   &lt;/excludeAnnotations&gt;
+   *   .....
+   * &lt;/configuration&gt;
+   * </pre>
+   * 
    * @see AnalyzeMojo#includeAnnotations
    * @since 1.1.0
    */
