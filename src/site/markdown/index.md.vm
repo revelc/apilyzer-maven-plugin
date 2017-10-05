@@ -135,5 +135,53 @@ which is not a public API type.  The second problem is
 `MiniAccumuloInstance.lookupInstanceName()` takes a parameter of type
 `ZooCache` which is not a public API type.
 
+Annotation Example
+------------------
+
+Hadoop has two annotations that it uses to communicate who should use its APIs.  First, the
+`InterfaceAudience` annotation has values of `Public`, `LimitedPrivate`, and `Private`.  Second, the
+`InterfaceStability` annotation has values of `Stable`, `Evolving`, and `Unstable`. In Hadoop the
+convention is to mark each API with an audience and stability annotation. The following example
+finds types marked Public+Stable using types that are not Public+Stable.
+
+When trying to analyze a classes annotations, the class must be loaded. In the example below some
+classes could not be loaded because their dependencies were not on the classpath. However these
+classes were not in a package we cared about. Excluding classes not in the `org.apache.hadoop`
+package fixed this problem.
+
+```xml
+  <configuration>
+     <!--Look for Public+Stable APIs using Types that are not Public+Stable-->
+     <includes>
+       <!-- This class has no annotation, but seems like it sould be in API -->
+       <include>org[.]apache[.]hadoop[.]fs[.]RemoteIterator</include>
+     </includes>
+     <includeAnnotations>
+       <include>
+         [@]org[.]apache[.]hadoop[.]classification[.]InterfaceAudience[$]Public.*
+       </include>
+     </includeAnnotations>
+     <excludeAnnotations>
+       <exclude>
+         [@]org[.]apache[.]hadoop[.]classification[.]InterfaceStability[$]Evolving.*
+       </exclude>
+       <exclude>
+         [@]org[.]apache[.]hadoop[.]classification[.]InterfaceStability[$]Unstable.*
+       </exclude>
+       <!-- If a class is included in the API, then its public inner classes are also (unless excluded).
+            This exclude is for the case where a type w/ Private annotation is an inner class of a class
+            with a Public annotation -->
+       <exclude>
+         [@]org[.]apache[.]hadoop[.]classification[.]InterfaceAudience[$](Limited)?Private.*
+       </exclude>
+    </excludeAnnotations>
+     <excludes>
+        <!-- Exclude all classes not in the org.apache.hadoop package -->
+        <exclude>(?!org[.]apache[.]hadoop.*).*</exclude>
+     </excludes>
+  </configuration>
+```
+
+
 [1]: http://mojo.codehaus.org/animal-sniffer-maven-plugin/
 [2]: http://checkstyle.sourceforge.net/config_imports.html#ImportControl
