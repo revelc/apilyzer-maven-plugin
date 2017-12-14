@@ -18,17 +18,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
-
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.MavenProject;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -49,6 +38,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.MavenProject;
 
 /**
  * Analyzes declared public API.
@@ -66,21 +64,18 @@ public class AnalyzeMojo extends AbstractMojo {
    * fully-qualified class name matches any of these regular expressions, and does not match any of
    * those in the excludes, will be included for analysis.
    *
-   * <p>
-   * Matching is done with the regular expression anchored to the beginning and end of the
+   * <p>Matching is done with the regular expression anchored to the beginning and end of the
    * fully-qualified class name, so there is no need to prefix with {@code ^} or suffix with
    * {@code $}. To match a partial class name, you will need to add {@code .*} as a prefix and/or
    * suffix.
    *
-   * <p>
-   * If an include pattern matches a class, then that class along with all of its public or
+   * <p>If an include pattern matches a class, then that class along with all of its public or
    * protected inner classes are added to the public API definition. If you do not wish for a
    * particular inner class to be in the public API then you can add a more specific exclusion for
    * it. For example could include {@code com.foo.C} and exclude {@code com.foo.C$I1} if the inner
    * class {@code C$I1} ends up in the API when its not wanted.
    *
-   * <p>
-   * Example:
+   * <p>Example:
    *
    * <pre>
    * &lt;configuration&gt;
@@ -103,8 +98,7 @@ public class AnalyzeMojo extends AbstractMojo {
    * The classes to exclude from your public API definition, which may have otherwise matched your
    * includes. The format is the same as {@link #includes}.
    *
-   * <p>
-   * Example:
+   * <p>Example:
    *
    * <pre>
    * &lt;configuration&gt;
@@ -127,11 +121,9 @@ public class AnalyzeMojo extends AbstractMojo {
    * themselves, declared as part of your API. For example, these may be objects from a standard
    * library, which you utilize as parameters in your API methods.
    *
-   * <p>
-   * These follow the same format as {@link #includes} and {@link #excludes}.
+   * <p>These follow the same format as {@link #includes} and {@link #excludes}.
    *
-   * <p>
-   * Example:
+   * <p>Example:
    *
    * <pre>
    * &lt;configuration&gt;
@@ -197,16 +189,13 @@ public class AnalyzeMojo extends AbstractMojo {
    * annotation matches any regular expression and it does not match any exclusion, then its
    * included as an API type.
    *
-   * <p>
-   * This section of the configuration is ORed with the {@code <includes>} section. So if a class
+   * <p>This section of the configuration is ORed with the {@code <includes>} section. So if a class
    * matches something in either section (and its not excluded), then its included in the API
    * definition.
    *
-   * <p>
-   * This section has the same behavior with inner classes as {@code <includes>}.
+   * <p>This section has the same behavior with inner classes as {@code <includes>}.
    *
-   * <p>
-   * Example
+   * <p>Example:
    *
    * <pre>
    * &lt;configuration&gt;
@@ -229,8 +218,7 @@ public class AnalyzeMojo extends AbstractMojo {
   /**
    * Exclude classes from public API definition using annotation.
    *
-   * <p>
-   * Example
+   * <p>Example:
    *
    * <pre>
    * &lt;configuration&gt;
@@ -285,7 +273,7 @@ public class AnalyzeMojo extends AbstractMojo {
       out.println("Excludes: " + excludes);
       out.println("Allowed: " + allows);
 
-      List<Class<?>> publicApiClasses = new ArrayList<Class<?>>();
+      List<Class<?>> publicApiClasses = new ArrayList<>();
       TreeSet<String> publicSet = new TreeSet<>();
       buildPublicSet(classPath, publicApiClasses, publicSet);
 
@@ -500,7 +488,7 @@ public class AnalyzeMojo extends AbstractMojo {
 
   // get public and protected fields
   private List<Field> getFields(Class<?> clazz) {
-    ArrayList<Field> fields = new ArrayList<Field>(Arrays.asList(clazz.getFields()));
+    ArrayList<Field> fields = new ArrayList<>(Arrays.asList(clazz.getFields()));
 
     // TODO need to get superlclasses protected fields, deduping on name
     for (Field f : clazz.getDeclaredFields()) {
@@ -514,7 +502,7 @@ public class AnalyzeMojo extends AbstractMojo {
 
   // get public and protected methods
   private List<Method> getMethods(Class<?> clazz) {
-    ArrayList<Method> methods = new ArrayList<Method>(Arrays.asList(clazz.getMethods()));
+    ArrayList<Method> methods = new ArrayList<>(Arrays.asList(clazz.getMethods()));
 
     // TODO need to get superlclasses protected methods, deduping on signature
     for (Method m : clazz.getDeclaredMethods()) {
@@ -527,7 +515,7 @@ public class AnalyzeMojo extends AbstractMojo {
   }
 
   private List<Class<?>> getInnerClasses(Class<?> clazz) {
-    ArrayList<Class<?>> classes = new ArrayList<Class<?>>(Arrays.asList(clazz.getClasses()));
+    ArrayList<Class<?>> classes = new ArrayList<>(Arrays.asList(clazz.getClasses()));
 
     // TODO need to get superclasses' protected classes, deduping on name
     for (Class<?> c : clazz.getDeclaredClasses()) {
