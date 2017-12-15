@@ -321,7 +321,7 @@ public class AnalyzeMojo extends AbstractMojo {
   }
 
   private static enum ProblemType {
-    INNER_CLASS, METHOD_PARAM, METHOD_RETURN, FIELD, CTOR_PARAM
+    INNER_CLASS, METHOD_PARAM, METHOD_RETURN, FIELD, CTOR_PARAM, CTOR_EXCEPTION, METHOD_EXCEPTION
   }
 
   private ClassPath getClassPath() throws DependencyResolutionRequiredException, IOException {
@@ -490,7 +490,7 @@ public class AnalyzeMojo extends AbstractMojo {
   private List<Field> getFields(Class<?> clazz) {
     ArrayList<Field> fields = new ArrayList<>(Arrays.asList(clazz.getFields()));
 
-    // TODO need to get superlclasses protected fields, deduping on name
+    // TODO need to get superclasses protected fields, deduping on name
     for (Field f : clazz.getDeclaredFields()) {
       if ((f.getModifiers() & Modifier.PROTECTED) != 0) {
         fields.add(f);
@@ -579,6 +579,15 @@ public class AnalyzeMojo extends AbstractMojo {
           ok = false;
         }
       }
+
+      Class<?>[] exceptions = constructor.getExceptionTypes();
+      for (Class<?> exception : exceptions) {
+        if (!isOk(publicSet, exception)) {
+          problem(out, counter, ProblemType.CTOR_EXCEPTION, clazz, "(...) throws",
+              exception.getName());
+          ok = false;
+        }
+      }
     }
 
     for (Method method : getMethods(clazz)) {
@@ -607,6 +616,15 @@ public class AnalyzeMojo extends AbstractMojo {
         if (!isOk(publicSet, param)) {
           problem(out, counter, ProblemType.METHOD_PARAM, clazz, method.getName() + "(...)",
               param.getName());
+          ok = false;
+        }
+      }
+
+      Class<?>[] exceptions = method.getExceptionTypes();
+      for (Class<?> exception : exceptions) {
+        if (!isOk(publicSet, exception)) {
+          problem(out, counter, ProblemType.METHOD_EXCEPTION, clazz,
+              method.getName() + "(...) throws", exception.getName());
           ok = false;
         }
       }
