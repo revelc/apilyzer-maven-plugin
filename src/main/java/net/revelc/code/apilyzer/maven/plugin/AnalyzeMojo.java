@@ -250,7 +250,6 @@ public class AnalyzeMojo extends AbstractMojo {
     excludeAnnotationsPs = new PatternSet(excludeAnnotations);
     allowsPs = new PatternSet(allows);
 
-
     AtomicLong counter = new AtomicLong(0);
 
     if (skip) {
@@ -375,7 +374,6 @@ public class AnalyzeMojo extends AbstractMojo {
         annotations = new Annotation[0];
       }
 
-
       for (Annotation annotation : annotations) {
         if (includeAnnotationsPs.matchesAny(annotation.toString())) {
           if (!annotationExcludes(annotations)) {
@@ -437,7 +435,6 @@ public class AnalyzeMojo extends AbstractMojo {
         return true;
       }
     }
-
 
     return false;
   }

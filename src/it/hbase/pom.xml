@@ -12,33 +12,63 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>apilyzer-test</groupId>
   <artifactId>hbase-test</artifactId>
-  <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
-  <name>HBase APILyzer test</name>
+  <version>@project.version@</version>
+  <name>HBase APILyzer Test</name>
   <properties>
     <hbase.version>1.1.1</hbase.version>
+    <maven.compiler.release>8</maven.compiler.release>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
   <dependencies>
     <dependency>
-	<groupId>org.apache.hbase</groupId>
-	<artifactId>hbase-client</artifactId>
-	<version>${hbase.version}</version>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-client</artifactId>
+      <version>${hbase.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>jdk.tools</groupId>
+          <artifactId>jdk.tools</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
-
   <build>
     <plugins>
       <plugin>
-        <groupId>net.revelc.code</groupId>
-        <artifactId>apilyzer-maven-plugin</artifactId>
-        <version>1.1.0-SNAPSHOT</version>
+        <groupId>com.github.ekryd.sortpom</groupId>
+        <artifactId>sortpom-maven-plugin</artifactId>
+        <version>2.10.0</version>
+        <executions>
+          <execution>
+            <id>sortpom</id>
+            <goals>
+              <goal>sort</goal>
+            </goals>
+            <phase>validate</phase>
+            <configuration>
+              <predefinedSortOrder>recommended_2008_06</predefinedSortOrder>
+              <createBackupFile>false</createBackupFile>
+              <lineSeparator>\n</lineSeparator>
+              <expandEmptyElements>false</expandEmptyElements>
+              <nrOfIndentSpace>2</nrOfIndentSpace>
+              <sortDependencies>scope,groupId,artifactId</sortDependencies>
+              <sortProperties>true</sortProperties>
+              <verifyFail>Stop</verifyFail>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>@project.groupId@</groupId>
+        <artifactId>@project.artifactId@</artifactId>
+        <version>@project.version@</version>
         <executions>
           <execution>
             <id>apilyzer</id>
@@ -47,8 +77,7 @@
             </goals>
             <configuration>
               <!--Look for Public+Stable APIs using Types that are not Public+Stable-->
-              <includes>
-              </includes>
+              <includes />
               <includeAnnotations>
                 <include>[@]org[.]apache[.]hadoop[.]hbase[.]classification[.]InterfaceAudience[$]Public.*</include>
               </includeAnnotations>
@@ -80,5 +109,3 @@
     </plugins>
   </build>
 </project>
-
-
