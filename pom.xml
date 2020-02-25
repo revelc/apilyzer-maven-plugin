@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>21</version>
+    <version>23</version>
   </parent>
   <groupId>net.revelc.code</groupId>
   <artifactId>apilyzer-maven-plugin</artifactId>
@@ -87,7 +87,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <!-- skip standard site deployment, because site is deployed using github plugin instead -->
     <maven.site.deploy.skip>true</maven.site.deploy.skip>
-    <maven.tools-version>3.6.2</maven.tools-version>
+    <maven.tools-version>3.6.3</maven.tools-version>
     <mavenPluginToolsVersion>3.6.0</mavenPluginToolsVersion>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -97,12 +97,12 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>28.1-jre</version>
+        <version>28.2-jre</version>
       </dependency>
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.12</version>
+        <version>4.13</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
@@ -172,7 +172,7 @@
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>8.26</version>
+              <version>8.29</version>
             </dependency>
           </dependencies>
         </plugin>
