@@ -15,4 +15,4 @@
 File reportFile = new File(basedir, "target/apilyzer.txt");
 assert reportFile.isFile()
 def last=reportFile.withReader{ r->r.eachLine{ it } }
-assert last=="Total : 1"
+assert last=="Total : 2"
