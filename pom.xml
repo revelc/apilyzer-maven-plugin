@@ -61,6 +61,10 @@
     <system>GitHub</system>
     <url>https://github.com/revelc/apilyzer-maven-plugin/issues</url>
   </issueManagement>
+  <ciManagement>
+    <system>GitHub</system>
+    <url>https://github.com/revelc/apilyzer-maven-plugin/actions</url>
+  </ciManagement>
   <distributionManagement>
     <!-- https://issues.sonatype.org/browse/OSSRH-14649 -->
     <repository>
