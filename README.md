@@ -30,7 +30,7 @@ public API is the names of the goals and configuration options.
 [1]: http://semver.org/spec/v2.0.0.html
 [ci_img]: https://github.com/revelc/apilyzer-maven-plugin/workflows/mvn%20verify/badge.svg
 [ci_link]: https://github.com/revelc/apilyzer-maven-plugin/actions
-[license_img]: https://img.shields.io/badge/license-Apache%201.0-blue.svg
+[license_img]: https://img.shields.io/badge/license-Apache%202.0-blue.svg
 [license_link]: https://github.com/revelc/apilyzer-maven-plugin/blob/main/LICENSE
 [maven_img]: https://maven-badges.herokuapp.com/maven-central/net.revelc.code/apilyzer-maven-plugin/badge.svg
 [maven_link]: https://maven-badges.herokuapp.com/maven-central/net.revelc.code/apilyzer-maven-plugin
