@@ -19,7 +19,7 @@
   <version>@project.version@</version>
   <name>Accumulo APILyzer Test</name>
   <properties>
-    <accumulo.version>1.6.2</accumulo.version>
+    <accumulo.version>1.10.1</accumulo.version>
     <maven.compiler.release>8</maven.compiler.release>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
