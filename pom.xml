@@ -79,6 +79,7 @@
     </snapshotRepository>
   </distributionManagement>
   <properties>
+    <fluido.skin.version>2.0.0-M6</fluido.skin.version>
     <formatter.config>contrib/eclipse-java-style.xml</formatter.config>
     <formatter.css.skip>true</formatter.css.skip>
     <formatter.html.skip>true</formatter.html.skip>
@@ -266,7 +267,7 @@
             <dependency>
               <groupId>org.apache.maven.skins</groupId>
               <artifactId>maven-fluido-skin</artifactId>
-              <version>2.0.0-M6</version>
+              <version>${fluido.skin.version}</version>
             </dependency>
           </dependencies>
         </plugin>
@@ -406,7 +407,7 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-plugin-plugin</artifactId>
+        <artifactId>maven-plugin-report-plugin</artifactId>
         <version>${mavenPluginToolsVersion}</version>
       </plugin>
       <plugin>
