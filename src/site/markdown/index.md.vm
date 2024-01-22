@@ -1,25 +1,25 @@
 <!--
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
 
-      http://www.apache.org/licenses/LICENSE-2.0
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
+        https://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
 -->
 
-Description
------------
+## Description
 
   A simple maven plugin that detects some illegal changes to a Java project's
   API.
 
-How it works
-------------
+## How it works
 
   APILyzer looks for deviations from the following rules.
 
@@ -32,8 +32,7 @@ How it works
   public inner classes.  Protected classes and members are treated as public
   during analysis.
 
-Other tools
------------
+## Other tools
 
   This tool fills a niche not covered by other tools, like [Animal Sniffer][1]
   and [checkstyle import control][2]. A project that wants to ensure API
@@ -43,8 +42,7 @@ Other tools
   signatures of a previous API differs because it only validates that the old
   API is not broken.
 
-How to use it
--------------
+## How to use it
 
   To add this plugin to your project, configure the plugin similarly to:
 
@@ -135,8 +133,7 @@ which is not a public API type.  The second problem is
 `MiniAccumuloInstance.lookupInstanceName()` takes a parameter of type
 `ZooCache` which is not a public API type.
 
-Annotation Example
-------------------
+## Annotation Example
 
 Hadoop has two annotations that it uses to communicate who should use its APIs.  First, the
 `InterfaceAudience` annotation has values of `Public`, `LimitedPrivate`, and `Private`.  Second, the
