@@ -45,7 +45,7 @@
     <url>https://github.com/revelc/${github.site.repositoryName}</url>
   </scm>
   <properties>
-    <formatter.configFile>contrib/eclipse-java-style.xml</formatter.configFile>
+    <formatter.configFile>src/build/eclipse-java-style.xml</formatter.configFile>
     <invoker.streamLogs>true</invoker.streamLogs>
     <maven.compiler.release>8</maven.compiler.release>
   </properties>
