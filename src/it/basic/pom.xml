@@ -30,30 +30,6 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>com.github.ekryd.sortpom</groupId>
-        <artifactId>sortpom-maven-plugin</artifactId>
-        <version>3.2.1</version>
-        <executions>
-          <execution>
-            <id>sortpom</id>
-            <goals>
-              <goal>sort</goal>
-            </goals>
-            <phase>validate</phase>
-            <configuration>
-              <predefinedSortOrder>recommended_2008_06</predefinedSortOrder>
-              <createBackupFile>false</createBackupFile>
-              <lineSeparator>\n</lineSeparator>
-              <expandEmptyElements>false</expandEmptyElements>
-              <nrOfIndentSpace>2</nrOfIndentSpace>
-              <sortDependencies>scope,groupId,artifactId</sortDependencies>
-              <sortProperties>true</sortProperties>
-              <verifyFail>Stop</verifyFail>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>@project.groupId@</groupId>
         <artifactId>@project.artifactId@</artifactId>
         <version>@project.version@</version>

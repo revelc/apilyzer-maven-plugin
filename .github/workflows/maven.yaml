@@ -9,7 +9,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         java: [17, 21]
       fail-fast: false
     runs-on: ${{ matrix.os }}
@@ -27,4 +27,11 @@ jobs:
       run: ./mvnw -B -V -e "-Dstyle.color=always" verify "-Drevelc.skipFormat" "-Drevelc.verifyFormat"
       env:
         MAVEN_OPTS: -Djansi.force=true
+    - name: View IT build log on failure
+      uses: actions/upload-artifact@v4
+      if: ${{ failure() }}
+      with:
+        name: apilyzer-reports
+        path: target/it/**/apilyzer.txt
+        if-no-files-found: ignore
 
