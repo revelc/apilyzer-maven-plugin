@@ -12,8 +12,9 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
         java: [17, 21]
         include:
-          - os: windows-latest
-            verifyFormatOpt: '=false'
+          - { os: ubuntu-latest, verifyFormatOpt: '-Drevelc.verifyFormat' }
+          - { os: macos-latest, verifyFormatOpt: '-Drevelc.verifyFormat' }
+          - { os: windows-latest, verifyFormatOpt: '-Drevelc.skipFormat' }
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
@@ -27,7 +28,7 @@ jobs:
     - name: Download Maven Wrapper
       run: mvn wrapper:wrapper "-Dmaven=3.9.8"
     - name: Build with Maven
-      run: ./mvnw -B -V -e "-Dstyle.color=always" verify "-Drevelc.skipFormat" "-Drevelc.verifyFormat${{ matrix.verifyFormatOpt }}"
+      run: ./mvnw -B -V -e "-Dstyle.color=always" verify "-Drevelc.skipFormat" "${{ matrix.verifyFormatOpt }}"
       env:
         MAVEN_OPTS: -Djansi.force=true
     - name: View IT build log on failure
