@@ -185,9 +185,9 @@ public class AnalyzeMojo extends AbstractMojo {
    * This option enables including classes in your public API definition based on class level
    * annotations. This option takes one or more regular expression. Annotations are discovered using
    * reflection, so annotations scoped to compile may not be seen. For each regular expression
-   * {@link String#matches(String)} is called on the output of {@link Annotation#toString()}. If any
-   * annotation matches any regular expression and it does not match any exclusion, then its
-   * included as an API type.
+   * {@link java.lang.String#matches(java.lang.String)} is called on the output of
+   * {@link Annotation#toString()}. If any annotation matches any regular expression and it does not
+   * match any exclusion, then its included as an API type.
    *
    * <p>This section of the configuration is ORed with the {@code <includes>} section. So if a class
    * matches something in either section (and its not excluded), then its included in the API
