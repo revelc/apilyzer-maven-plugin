@@ -32,6 +32,6 @@ jobs:
       if: ${{ failure() }}
       with:
         name: apilyzer-reports
-        path: target/it/**/apilyzer.txt
+        path: target/its/**/apilyzer.txt
         if-no-files-found: ignore
 
