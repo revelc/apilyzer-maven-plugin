@@ -46,6 +46,7 @@
   </scm>
   <properties>
     <formatter.configFile>src/build/eclipse-java-style.xml</formatter.configFile>
+    <formatter.lineEnding>AUTO</formatter.lineEnding>
     <invoker.streamLogs>true</invoker.streamLogs>
     <maven.compiler.release>8</maven.compiler.release>
   </properties>
