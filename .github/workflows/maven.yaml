@@ -31,7 +31,9 @@ jobs:
       uses: actions/upload-artifact@v4
       if: ${{ failure() }}
       with:
-        name: apilyzer-reports
-        path: target/its/**/apilyzer.txt
+        name: apilyzer-reports-java-${{ matrix.java }}-os-${{ matrix.os }}
+        path: |
+          target/its/**/apilyzer.txt
+          target/its/**/build.log
         if-no-files-found: ignore
 
