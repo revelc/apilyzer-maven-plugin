@@ -14,8 +14,6 @@
 
 package net.revelc.code.apilyzer.maven.plugin;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
 import java.io.File;
@@ -28,6 +26,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -38,6 +37,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -185,9 +185,9 @@ public class AnalyzeMojo extends AbstractMojo {
    * This option enables including classes in your public API definition based on class level
    * annotations. This option takes one or more regular expression. Annotations are discovered using
    * reflection, so annotations scoped to compile may not be seen. For each regular expression
-   * {@link java.lang.String#matches(java.lang.String)} is called on the output of
-   * {@link Annotation#toString()}. If any annotation matches any regular expression and it does not
-   * match any exclusion, then its included as an API type.
+   * {@link java.lang.String#matches(java.lang.String)} is called to compare with each annotation's
+   * class name prefixed with the '@' character. If any annotation matches any regular expression
+   * and it does not match any exclusion, then its included as an API type.
    *
    * <p>This section of the configuration is ORed with the {@code <includes>} section. So if a class
    * matches something in either section (and its not excluded), then its included in the API
@@ -323,22 +323,18 @@ public class AnalyzeMojo extends AbstractMojo {
     INNER_CLASS, METHOD_PARAM, METHOD_RETURN, FIELD, CTOR_PARAM, CTOR_EXCEPTION, METHOD_EXCEPTION
   }
 
+  private static final Function<String, URL> TO_URL = item -> {
+    URI uri = new File(item).toURI();
+    try {
+      return uri.toURL();
+    } catch (MalformedURLException e) {
+      throw new IllegalArgumentException("Unable to convert string (" + item + ") to URL", e);
+    }
+  };
+
   private ClassPath getClassPath() throws DependencyResolutionRequiredException, IOException {
-    ClassLoader cl;
-    List<URL> urls =
-        Lists.transform(project.getCompileClasspathElements(), new Function<String, URL>() {
-          @Override
-          public URL apply(String input) {
-            try {
-              return new File(input).toURI().toURL();
-            } catch (MalformedURLException e) {
-              throw new IllegalArgumentException("Unable to convert string (" + input + ") to URL",
-                  e);
-            }
-          }
-        });
-    cl = new URLClassLoader(urls.toArray(new URL[0]), null);
-    return ClassPath.from(cl);
+    URL[] urls = project.getRuntimeClasspathElements().stream().map(TO_URL).toArray(URL[]::new);
+    return ClassPath.from(new URLClassLoader(urls, null));
   }
 
   private Annotation[] getAnnotations(ClassInfo classInfo) {
@@ -352,6 +348,10 @@ public class AnalyzeMojo extends AbstractMojo {
 
   private Annotation[] getAnnotations(Class<?> clazz) {
     return clazz.getDeclaredAnnotations();
+  }
+
+  private static String formatAnnotation(Annotation annotation) {
+    return "@" + annotation.annotationType().getName();
   }
 
   /**
@@ -375,7 +375,7 @@ public class AnalyzeMojo extends AbstractMojo {
       }
 
       for (Annotation annotation : annotations) {
-        if (includeAnnotationsPs.matchesAny(annotation.toString())) {
+        if (includeAnnotationsPs.matchesAny(formatAnnotation(annotation))) {
           if (!annotationExcludes(annotations)) {
             addPublicApiType(publicApiClasses, publicSet, classInfo);
           }
@@ -431,7 +431,7 @@ public class AnalyzeMojo extends AbstractMojo {
     }
 
     for (Annotation annotation : annotations) {
-      if (excludeAnnotationsPs.matchesAny(annotation.toString())) {
+      if (excludeAnnotationsPs.matchesAny(formatAnnotation(annotation))) {
         return true;
       }
     }
@@ -447,7 +447,7 @@ public class AnalyzeMojo extends AbstractMojo {
     Annotation[] annotations = getAnnotations(clazz);
 
     for (Annotation annotation : annotations) {
-      if (excludeAnnotationsPs.matchesAny(annotation.toString())) {
+      if (excludeAnnotationsPs.matchesAny(formatAnnotation(annotation))) {
         return true;
       }
     }
