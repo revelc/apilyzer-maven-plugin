@@ -333,7 +333,7 @@ public class AnalyzeMojo extends AbstractMojo {
   };
 
   private ClassPath getClassPath() throws DependencyResolutionRequiredException, IOException {
-    URL[] urls = project.getRuntimeClasspathElements().stream().map(TO_URL).toArray(URL[]::new);
+    URL[] urls = project.getCompileClasspathElements().stream().map(TO_URL).toArray(URL[]::new);
     return ClassPath.from(new URLClassLoader(urls, null));
   }
 
