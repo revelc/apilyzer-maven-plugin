@@ -19,7 +19,7 @@
   <parent>
     <groupId>net.revelc.code</groupId>
     <artifactId>revelc</artifactId>
-    <version>6</version>
+    <version>7</version>
   </parent>
   <artifactId>apilyzer-maven-plugin</artifactId>
   <version>1.3.1-SNAPSHOT</version>
