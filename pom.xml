@@ -54,7 +54,7 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>33.4.5-jre</version>
+        <version>33.4.6-jre</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -79,7 +79,7 @@
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>10.21.4</version>
+            <version>10.22.0</version>
           </dependency>
         </dependencies>
         <executions>
