@@ -12,38 +12,29 @@
  * limitations under the License.
  */
 
-package net.revelc.code.apilyzer.maven.plugin;
+package net.revelc.code.apilyzer;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+/**
+ * A set of patterns to match classes on the class path.
+ */
 class PatternSet {
   private final List<Pattern> patterns;
 
   PatternSet(List<String> regexs) {
-    if (regexs.size() == 0) {
-      patterns = Collections.emptyList();
-    } else {
-      patterns = new ArrayList<>();
-      for (String regex : regexs) {
-        patterns.add(Pattern.compile(regex));
-      }
-    }
+    patterns = regexs.isEmpty() ? Collections.emptyList()
+        : regexs.stream().map(Pattern::compile).collect(Collectors.toList());
   }
 
-  boolean matchesAny(String input) {
-    for (Pattern pattern : patterns) {
-      if (pattern.matcher(input).matches()) {
-        return true;
-      }
-    }
-
-    return false;
+  boolean anyMatch(String input) {
+    return patterns.stream().anyMatch(p -> p.matcher(input).matches());
   }
 
-  public int size() {
-    return patterns.size();
+  boolean isEmpty() {
+    return patterns.isEmpty();
   }
 }
