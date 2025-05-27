@@ -14,37 +14,45 @@
 
 -->
 
-## Description
+#set ($d = "$")
 
-  A simple maven plugin that detects some illegal changes to a Java project's
-  API.
+${project.name}
+===============
 
-## How it works
+${project.description}
 
-  APILyzer looks for deviations from the following rules.
+This `${project.artifactId}` detects some illegal changes to a Java
+project's API.
 
-  * Public API members should use other Public API types.
-  * Public API members should use an approved set of types.
+How it works
+---------------
 
-  APILyzer allows easy declaration of Public API Types and approved types.  The
-  public members of the public API types are analyzed to ensure only expected
-  types are used.  Public members include public methods, public fields, and
-  public inner classes.  Protected classes and members are treated as public
-  during analysis.
+APILyzer looks for deviations from the following rules.
 
-## Other tools
+* Public API members should use other Public API types.
+* Public API members should use an approved set of types.
 
-  This tool fills a niche not covered by other tools, like [Animal Sniffer][1]
-  and [checkstyle import control][2]. A project that wants to ensure API
-  stability would likely use these tools in addition to APILyzer. Import
-  analysis differs because it's ok for a public API class to import a non-public
-  API class for use only in its implementation. Comparing new API changes to
-  signatures of a previous API differs because it only validates that the old
-  API is not broken.
+APILyzer allows easy declaration of Public API Types and approved types.  The
+public members of the public API types are analyzed to ensure only expected
+types are used.  Public members include public methods, public fields, and
+public inner classes.  Protected classes and members are treated as public
+during analysis.
 
-## How to use it
+Other tools
+---------------
 
-  To add this plugin to your project, configure the plugin similarly to:
+This tool fills a niche not covered by other tools, like [Animal Sniffer][1]
+and [checkstyle import control][2]. A project that wants to ensure API
+stability would likely use these tools in addition to APILyzer. Import
+analysis differs because it's ok for a public API class to import a non-public
+API class for use only in its implementation. Comparing new API changes to
+signatures of a previous API differs because it only validates that the old
+API is not broken.
+
+Getting Started
+---------------
+
+To add this plugin to your project, configure the plugin similarly to:
 
 ```xml
   <build>
@@ -94,13 +102,13 @@
   </build>
 ```
 
-  and build your project, similarly to (it runs at the verify phase by default):
+and build your project, similarly to (it runs at the [verify][3] phase by default):
 
 ```
 mvn verify
 ```
 
-  Below is the output of running the above command.
+Below is the output of running the above command.
 
 ```
 Includes: [org[.]apache[.]accumulo[.]minicluster[.].*]
@@ -182,3 +190,4 @@ package fixed this problem.
 
 [1]: http://mojo.codehaus.org/animal-sniffer-maven-plugin/
 [2]: http://checkstyle.sourceforge.net/config_imports.html#ImportControl
+[3]: https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html
