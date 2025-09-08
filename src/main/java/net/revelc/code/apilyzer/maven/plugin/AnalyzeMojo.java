@@ -471,7 +471,7 @@ public class AnalyzeMojo extends AbstractMojo {
       return true;
     }
 
-    // TODO make default allows configurable
+    // TODO: make default allows configurable
     if (fqName.startsWith("java.")) {
       return true;
     }
@@ -487,7 +487,7 @@ public class AnalyzeMojo extends AbstractMojo {
   private List<Field> getFields(Class<?> clazz) {
     ArrayList<Field> fields = new ArrayList<>(Arrays.asList(clazz.getFields()));
 
-    // TODO need to get superclasses protected fields, deduping on name
+    // TODO: need to get superclasses protected fields, deduping on name
     for (Field f : clazz.getDeclaredFields()) {
       if ((f.getModifiers() & Modifier.PROTECTED) != 0) {
         fields.add(f);
@@ -501,7 +501,7 @@ public class AnalyzeMojo extends AbstractMojo {
   private List<Method> getMethods(Class<?> clazz) {
     ArrayList<Method> methods = new ArrayList<>(Arrays.asList(clazz.getMethods()));
 
-    // TODO need to get superlclasses protected methods, deduping on signature
+    // TODO: need to get superlclasses protected methods, deduping on signature
     for (Method m : clazz.getDeclaredMethods()) {
       if ((m.getModifiers() & Modifier.PROTECTED) != 0) {
         methods.add(m);
@@ -514,7 +514,7 @@ public class AnalyzeMojo extends AbstractMojo {
   private List<Class<?>> getInnerClasses(Class<?> clazz) {
     ArrayList<Class<?>> classes = new ArrayList<>(Arrays.asList(clazz.getClasses()));
 
-    // TODO need to get superclasses' protected classes, deduping on name
+    // TODO: need to get superclasses' protected classes, deduping on name
     for (Class<?> c : clazz.getDeclaredClasses()) {
       if ((c.getModifiers() & Modifier.PROTECTED) != 0) {
         classes.add(c);
@@ -534,12 +534,12 @@ public class AnalyzeMojo extends AbstractMojo {
 
     boolean ok = true;
 
-    // TODO make configurable
+    // TODO: make configurable
     if (ignoreDeprecated && clazz.isAnnotationPresent(Deprecated.class)) {
       return true;
     }
 
-    // TODO check generic type parameters
+    // TODO: check generic type parameters
 
     for (Field field : getFields(clazz)) {
 
