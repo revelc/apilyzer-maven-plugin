@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Set up JDK ${{ matrix.java }}
       uses: actions/setup-java@v5
       with:
@@ -32,7 +32,7 @@ jobs:
       env:
         MAVEN_OPTS: -Djansi.force=true
     - name: View IT build log on failure
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       if: ${{ failure() }}
       with:
         name: apilyzer-reports-java-${{ matrix.java }}-os-${{ matrix.os }}
