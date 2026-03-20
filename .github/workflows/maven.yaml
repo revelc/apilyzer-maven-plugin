@@ -32,7 +32,7 @@ jobs:
       env:
         MAVEN_OPTS: -Djansi.force=true
     - name: View IT build log on failure
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       if: ${{ failure() }}
       with:
         name: apilyzer-reports-java-${{ matrix.java }}-os-${{ matrix.os }}
