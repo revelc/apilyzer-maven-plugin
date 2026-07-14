@@ -32,5 +32,5 @@ public API is the names of the goals and configuration options.
 [ci_link]: https://github.com/revelc/apilyzer-maven-plugin/actions
 [license_img]: https://img.shields.io/badge/license-Apache%202.0-blue.svg
 [license_link]: https://github.com/revelc/apilyzer-maven-plugin/blob/main/LICENSE
-[maven_img]: https://maven-badges.herokuapp.com/maven-central/net.revelc.code/apilyzer-maven-plugin/badge.svg
-[maven_link]: https://maven-badges.herokuapp.com/maven-central/net.revelc.code/apilyzer-maven-plugin
+[maven_img]: https://img.shields.io/maven-central/v/net.revelc.code/apilyzer-maven-plugin
+[maven_link]: https://central.sonatype.com/artifact/net.revelc.code/apilyzer-maven-plugin
