@@ -14,10 +14,11 @@
 
 package net.revelc.code.apilyzer.maven.plugin;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
@@ -239,7 +240,7 @@ public class AnalyzeMojo extends AbstractMojo {
   private List<String> excludeAnnotations = Collections.emptyList();
   private PatternSet excludeAnnotationsPs;
 
-  private static final String FORMAT = "  %-20s %-60s %-35s %s\n";
+  private static final String FORMAT = "  %-20s %-60s %-35s %s%n";
 
   @Override
   public void execute() throws MojoFailureException, MojoExecutionException {
@@ -264,7 +265,7 @@ public class AnalyzeMojo extends AbstractMojo {
       throw new MojoExecutionException("Error resolving project classpath", e);
     }
 
-    try (PrintStream out = new PrintStream(new File(outputFile))) {
+    try (PrintStream out = new PrintStream(new File(outputFile), UTF_8)) {
 
       out.println("Includes: " + includes);
       out.println("IncludeAnnotations: " + includeAnnotations);
@@ -314,7 +315,7 @@ public class AnalyzeMojo extends AbstractMojo {
         getLog().error(msg);
         throw new MojoFailureException(msg);
       }
-    } catch (FileNotFoundException e) {
+    } catch (IOException e) {
       throw new MojoExecutionException("Bad configuration: cannot create specified outputFile", e);
     }
   }

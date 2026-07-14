@@ -3,18 +3,21 @@
 
 name: mvn verify
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
 
 jobs:
   build:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        java: [17, 21]
-        include:
-          - { os: ubuntu-latest, verifyFormatOpt: '-Drevelc.verifyFormat' }
-          - { os: macos-latest, verifyFormatOpt: '-Drevelc.verifyFormat' }
-          - { os: windows-latest, verifyFormatOpt: '-Drevelc.skipFormat' }
+        java: [21]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
@@ -26,9 +29,9 @@ jobs:
         distribution: temurin
         cache: 'maven'
     - name: Download Maven Wrapper
-      run: mvn wrapper:wrapper "-Dmaven=3.9.8"
+      run: mvn wrapper:wrapper "-Dmaven=3.9.16"
     - name: Build with Maven
-      run: ./mvnw -B -V -e "-Dstyle.color=always" verify "-Drevelc.skipFormat" "${{ matrix.verifyFormatOpt }}"
+      run: ./mvnw -B -V -e "-Dstyle.color=always" verify "-Drevelc.skipFormat" "-Drevelc.verifyFormat"
       env:
         MAVEN_OPTS: -Djansi.force=true
     - name: View IT build log on failure
