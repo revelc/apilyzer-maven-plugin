@@ -47,7 +47,7 @@
   <properties>
     <formatter.configFile>src/build/eclipse-java-style.xml</formatter.configFile>
     <invoker.streamLogs>true</invoker.streamLogs>
-    <maven.compiler.release>11</maven.compiler.release>
+    <maven.compiler.release>17</maven.compiler.release>
     <revelc.min-build-jdk>21</revelc.min-build-jdk>
     <!-- plugin and dependency versions -->
     <version.checkstyle>13.4.2</version.checkstyle>
