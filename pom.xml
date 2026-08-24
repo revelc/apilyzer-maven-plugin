@@ -50,14 +50,14 @@
     <maven.compiler.release>17</maven.compiler.release>
     <revelc.min-build-jdk>21</revelc.min-build-jdk>
     <!-- plugin and dependency versions -->
-    <version.checkstyle>13.10.0</version.checkstyle>
+    <version.checkstyle>14.0.0</version.checkstyle>
   </properties>
   <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>33.6.0-jre</version>
+        <version>33.7.1-jre</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
